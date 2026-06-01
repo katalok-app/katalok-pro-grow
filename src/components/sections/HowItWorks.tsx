@@ -1,0 +1,29 @@
+const steps = [
+  { n: "01", title: "Create your profile", body: "Name, city, profession, contact — set up in under 2 minutes." },
+  { n: "02", title: "Upload your work", body: "Showcase services with photos, prices, and durations." },
+  { n: "03", title: "Receive bookings", body: "Get structured booking requests from serious clients." },
+];
+
+export function HowItWorks() {
+  return (
+    <section id="how" className="bg-card/50 border-y border-border">
+      <div className="container-page py-20 md:py-28">
+        <div className="max-w-2xl">
+          <span className="eyebrow">How it works</span>
+          <h2 className="mt-4 text-3xl sm:text-4xl md:text-5xl">
+            Three steps to <span className="italic text-mocha">your next client</span>
+          </h2>
+        </div>
+        <ol className="mt-12 grid gap-6 md:grid-cols-3">
+          {steps.map((s) => (
+            <li key={s.n} className="relative rounded-2xl border border-border bg-background p-7">
+              <span className="font-display text-5xl text-accent/70">{s.n}</span>
+              <h3 className="mt-3 text-xl">{s.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}

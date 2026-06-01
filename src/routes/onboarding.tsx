@@ -5,6 +5,7 @@ import { CheckCircle2, ImagePlus, Loader2, Plus, Trash2, ArrowLeft } from "lucid
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { CATEGORIES } from "@/lib/categories";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -376,7 +377,17 @@ function PortfolioForm({
       <div className="grid gap-3 sm:grid-cols-3">
         <Input label="Price (XAF)" name="price" type="number" min={0} placeholder="25000" />
         <Input label="Duration (min)" name="duration_minutes" type="number" min={1} placeholder="180" />
-        <Input label="Category" name="category" placeholder="Hair" />
+        <div>
+          <Label>Category</Label>
+          <select
+            name="category"
+            defaultValue=""
+            className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="">Select…</option>
+            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
       </div>
       <div>
         <Label>Description (optional)</Label>

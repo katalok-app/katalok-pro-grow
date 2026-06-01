@@ -4,6 +4,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { Hero } from "@/components/sections/Hero";
 import { Problem } from "@/components/sections/Problem";
 import { Offer } from "@/components/sections/Offer";
+import { Categories } from "@/components/sections/Categories";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { Levels } from "@/components/sections/Levels";
 import { Waitlist } from "@/components/sections/Waitlist";
@@ -38,6 +39,7 @@ function Landing() {
         <Hero />
         <Problem />
         <Offer />
+        <Categories />
         <HowItWorks />
         <Levels />
         <Waitlist />

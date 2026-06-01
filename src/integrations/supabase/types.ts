@@ -14,7 +14,145 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      portfolio_posts: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          image_urls: string[]
+          price: number | null
+          profile_id: string
+          service_title: string
+          status: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          image_urls?: string[]
+          price?: number | null
+          profile_id: string
+          service_title: string
+          status?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          image_urls?: string[]
+          price?: number | null
+          profile_id?: string
+          service_title?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_posts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "pro_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pro_profiles: {
+        Row: {
+          bio: string | null
+          city: string
+          created_at: string
+          id: string
+          name: string
+          phone: string
+          profession: string
+          signup_id: string
+          social_link: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          bio?: string | null
+          city: string
+          created_at?: string
+          id?: string
+          name: string
+          phone: string
+          profession: string
+          signup_id: string
+          social_link?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          bio?: string | null
+          city?: string
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string
+          profession?: string
+          signup_id?: string
+          social_link?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pro_profiles_signup_id_fkey"
+            columns: ["signup_id"]
+            isOneToOne: true
+            referencedRelation: "waitlist_signups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waitlist_signups: {
+        Row: {
+          city: string
+          consent: boolean
+          created_at: string
+          full_name: string
+          id: string
+          phone: string
+          profession: string
+          sample_work_urls: string[] | null
+          social_link: string | null
+          status: string
+          years_experience: number | null
+        }
+        Insert: {
+          city: string
+          consent?: boolean
+          created_at?: string
+          full_name: string
+          id?: string
+          phone: string
+          profession: string
+          sample_work_urls?: string[] | null
+          social_link?: string | null
+          status?: string
+          years_experience?: number | null
+        }
+        Update: {
+          city?: string
+          consent?: boolean
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string
+          profession?: string
+          sample_work_urls?: string[] | null
+          social_link?: string | null
+          status?: string
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

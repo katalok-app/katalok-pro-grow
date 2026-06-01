@@ -6,10 +6,7 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-card/40">
       <div className="container-page grid gap-10 py-14 md:grid-cols-3">
         <div>
-          <div className="flex items-center gap-2">
-            <Logo className="h-9 w-9 object-contain" />
-            <span className="font-display text-lg text-foreground">katalok</span>
-          </div>
+          <Logo className="h-14 w-auto" />
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">
             A beauty discovery & booking platform built for African markets.
           </p>
@@ -21,8 +18,8 @@ export function SiteFooter() {
 
         <div className="text-sm">
           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Contact</p>
-          <a href="mailto:hello@katalok.app" className="mt-3 inline-flex items-center gap-2 text-foreground hover:text-primary">
-            <Mail className="h-4 w-4" /> hello@katalok.app
+          <a href="mailto:katalok.app@gmail.com" className="mt-3 inline-flex items-center gap-2 text-foreground hover:text-primary">
+            <Mail className="h-4 w-4" /> katalok.app@gmail.com
           </a>
         </div>
 

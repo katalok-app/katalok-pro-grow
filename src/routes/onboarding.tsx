@@ -371,14 +371,15 @@ function PortfolioForm({
         <Input label="Duration (min)" name="duration_minutes" type="number" min={1} placeholder="180" />
         <div>
           <Label>Category</Label>
-          <select
+          <input
             name="category"
-            defaultValue=""
+            list="portfolio-categories"
+            placeholder="Braids"
             className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">Select…</option>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
+          />
+          <datalist id="portfolio-categories">
+            {CATEGORIES.map((c) => <option key={c} value={c} />)}
+          </datalist>
         </div>
       </div>
       <div>

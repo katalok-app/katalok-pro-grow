@@ -129,15 +129,14 @@ export function Waitlist() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>Profession</Label>
-              <select
-                name="profession"
-                required
-                defaultValue=""
-                className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="" disabled>Select…</option>
-                {PROFESSIONS.map((p) => <option key={p}>{p}</option>)}
-              </select>
+              <div className="mt-1.5 grid gap-2">
+                {PROFESSIONS.map((p) => (
+                  <label key={p} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-input bg-background px-3 text-sm text-foreground transition hover:bg-secondary has-[:checked]:border-primary has-[:checked]:bg-primary/10">
+                    <input type="radio" name="profession" value={p} required className="h-4 w-4 accent-primary" />
+                    <span>{p}</span>
+                  </label>
+                ))}
+              </div>
             </div>
             <Field label="Years of experience" name="years_experience" type="number" min={0} placeholder="3" />
           </div>

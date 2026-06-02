@@ -25,6 +25,8 @@ export function Waitlist() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
+  const [profession, setProfession] = useState("");
+  const [consent, setConsent] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,7 +41,7 @@ export function Waitlist() {
         profession: form.get("profession"),
         social_link: form.get("social_link"),
         years_experience: form.get("years_experience") || undefined,
-        consent: form.get("consent") === "on",
+        consent,
       });
 
       // Upload sample work to storage first
@@ -129,12 +131,19 @@ export function Waitlist() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>Profession</Label>
+              <input type="hidden" name="profession" value={profession} />
               <div className="mt-1.5 grid gap-2">
                 {PROFESSIONS.map((p) => (
-                  <label key={p} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-input bg-background px-3 text-sm text-foreground transition hover:bg-secondary has-[:checked]:border-primary has-[:checked]:bg-primary/10">
-                    <input type="radio" name="profession" value={p} required className="h-4 w-4 accent-primary" />
+                  <button
+                    key={p}
+                    type="button"
+                    aria-pressed={profession === p}
+                    onClick={() => setProfession(p)}
+                    className="flex min-h-11 items-center gap-2 rounded-xl border border-input bg-background px-3 text-left text-sm text-foreground transition hover:bg-secondary aria-pressed:border-primary aria-pressed:bg-primary/10"
+                  >
+                    <span className={`h-4 w-4 rounded-full border ${profession === p ? "border-primary bg-primary shadow-[inset_0_0_0_4px_var(--background)]" : "border-input"}`} />
                     <span>{p}</span>
-                  </label>
+                  </button>
                 ))}
               </div>
             </div>
@@ -157,10 +166,17 @@ export function Waitlist() {
             </label>
           </div>
 
-          <label className="flex items-start gap-3 text-sm text-muted-foreground">
-            <input type="checkbox" name="consent" required className="mt-1 h-4 w-4 rounded border-input accent-primary" />
+          <button
+            type="button"
+            aria-pressed={consent}
+            onClick={() => setConsent((value) => !value)}
+            className="flex items-start gap-3 text-left text-sm text-muted-foreground"
+          >
+            <span className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${consent ? "border-primary bg-primary text-primary-foreground" : "border-input"}`}>
+              {consent && <CheckCircle2 className="h-3 w-3" />}
+            </span>
             <span>I agree to be contacted by Katalok about early access and accept the privacy policy.</span>
-          </label>
+          </button>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 

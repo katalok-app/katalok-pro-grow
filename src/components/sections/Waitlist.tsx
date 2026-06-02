@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { CheckCircle2, Loader2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { createWaitlistSignup } from "@/lib/waitlist.functions";
 
 const PROFESSIONS = ["Hairstylist", "Barber", "Nail Technician", "Makeup Artist", "Other"];
 
@@ -18,6 +20,7 @@ const schema = z.object({
 
 export function Waitlist() {
   const navigate = useNavigate();
+  const submitWaitlistSignup = useServerFn(createWaitlistSignup);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -52,9 +55,8 @@ export function Waitlist() {
         sample_work_urls.push(data.publicUrl);
       }
 
-      const { data, error: insErr } = await supabase
-        .from("waitlist_signups")
-        .insert({
+      const data = await submitWaitlistSignup({
+        data: {
           full_name: parsed.full_name,
           phone: parsed.phone,
           city: parsed.city,
@@ -63,10 +65,8 @@ export function Waitlist() {
           years_experience: parsed.years_experience ?? null,
           sample_work_urls,
           consent: parsed.consent,
-        })
-        .select("id")
-        .single();
-      if (insErr) throw insErr;
+        },
+      });
 
       // Store signup id locally so the user can continue onboarding
       localStorage.setItem("katalok.signup_id", data.id);

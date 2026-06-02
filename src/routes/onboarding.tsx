@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckCircle2, ImagePlus, Loader2, Plus, Trash2, ArrowLeft } from "lucide-react";
@@ -6,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { CATEGORIES } from "@/lib/categories";
+import { createPortfolioPost, deletePortfolioPost, getOnboardingData, saveProProfile } from "@/lib/onboarding.functions";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -42,6 +44,7 @@ type PortfolioRow = {
 
 function OnboardingPage() {
   const navigate = useNavigate();
+  const loadOnboardingData = useServerFn(getOnboardingData);
   const [signupId, setSignupId] = useState<string | null>(null);
   const [profile, setProfile] = useState<ProfileRow | null>(null);
   const [posts, setPosts] = useState<PortfolioRow[]>([]);
@@ -55,23 +58,18 @@ function OnboardingPage() {
     }
     setSignupId(id);
     (async () => {
-      const { data: prof } = await supabase
-        .from("pro_profiles")
-        .select("*")
-        .eq("signup_id", id)
-        .maybeSingle();
-      if (prof) {
-        setProfile(prof as ProfileRow);
-        const { data: pp } = await supabase
-          .from("portfolio_posts")
-          .select("*")
-          .eq("profile_id", prof.id)
-          .order("created_at", { ascending: false });
-        setPosts((pp as PortfolioRow[]) ?? []);
+      try {
+        const data = await loadOnboardingData({ data: { signup_id: id } });
+        setProfile(data.profile as ProfileRow | null);
+        setPosts((data.posts as PortfolioRow[]) ?? []);
+      } catch (err) {
+        console.error(err);
+        navigate({ to: "/" });
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
-  }, [navigate]);
+  }, [loadOnboardingData, navigate]);
 
   if (loading) {
     return (
@@ -131,6 +129,7 @@ const profileSchema = z.object({
 function ProfileForm({
   signupId, profile, onSaved,
 }: { signupId: string; profile: ProfileRow | null; onSaved: (p: ProfileRow) => void }) {
+  const saveProfile = useServerFn(saveProProfile);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
@@ -153,29 +152,19 @@ function ProfileForm({
         social_link: form.get("social_link"),
         bio: form.get("bio"),
       });
-      const payload = {
-        signup_id: signupId,
-        name: parsed.name,
-        profession: parsed.profession,
-        city: parsed.city,
-        phone: parsed.phone,
-        social_link: parsed.social_link || null,
-        bio: parsed.bio || null,
-        updated_at: new Date().toISOString(),
-      };
-      let data: ProfileRow | null = null;
-      if (profile) {
-        const { data: d, error: err } = await supabase
-          .from("pro_profiles").update(payload).eq("id", profile.id).select("*").single();
-        if (err) throw err;
-        data = d as ProfileRow;
-      } else {
-        const { data: d, error: err } = await supabase
-          .from("pro_profiles").insert(payload).select("*").single();
-        if (err) throw err;
-        data = d as ProfileRow;
-      }
-      onSaved(data!);
+      const data = await saveProfile({
+        data: {
+          profile_id: profile?.id ?? null,
+          signup_id: signupId,
+          name: parsed.name,
+          profession: parsed.profession,
+          city: parsed.city,
+          phone: parsed.phone,
+          social_link: parsed.social_link || null,
+          bio: parsed.bio || null,
+        },
+      });
+      onSaved(data as ProfileRow);
       setSavedAt(Date.now());
     } catch (err: any) {
       setError(err?.message ?? "Could not save profile");
@@ -224,6 +213,7 @@ function ProfileForm({
 function PortfolioSection({
   profile, posts, onChange,
 }: { profile: ProfileRow | null; posts: PortfolioRow[]; onChange: (p: PortfolioRow[]) => void }) {
+  const removePortfolioPost = useServerFn(deletePortfolioPost);
   const [adding, setAdding] = useState(false);
 
   if (!profile) {
@@ -239,7 +229,7 @@ function PortfolioSection({
   }
 
   async function deletePost(id: string) {
-    await supabase.from("portfolio_posts").delete().eq("id", id);
+    await removePortfolioPost({ data: { id, profile_id: profile!.id } });
     onChange(posts.filter((p) => p.id !== id));
   }
 
@@ -314,6 +304,7 @@ const postSchema = z.object({
 function PortfolioForm({
   profileId, onCreated, onCancel,
 }: { profileId: string; onCreated: (p: PortfolioRow) => void; onCancel: () => void }) {
+  const submitPortfolioPost = useServerFn(createPortfolioPost);
   const [files, setFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -338,16 +329,17 @@ function PortfolioForm({
         if (upErr) throw upErr;
         image_urls.push(supabase.storage.from("portfolio").getPublicUrl(key).data.publicUrl);
       }
-      const { data, error: insErr } = await supabase.from("portfolio_posts").insert({
-        profile_id: profileId,
-        service_title: parsed.service_title,
-        price: parsed.price ?? null,
-        duration_minutes: parsed.duration_minutes ?? null,
-        category: parsed.category || null,
-        description: parsed.description || null,
-        image_urls,
-      }).select("*").single();
-      if (insErr) throw insErr;
+      const data = await submitPortfolioPost({
+        data: {
+          profile_id: profileId,
+          service_title: parsed.service_title,
+          price: parsed.price ?? null,
+          duration_minutes: parsed.duration_minutes ?? null,
+          category: parsed.category || null,
+          description: parsed.description || null,
+          image_urls,
+        },
+      });
       onCreated(data as PortfolioRow);
     } catch (err: any) {
       setError(err?.message ?? "Could not save post");
@@ -379,14 +371,15 @@ function PortfolioForm({
         <Input label="Duration (min)" name="duration_minutes" type="number" min={1} placeholder="180" />
         <div>
           <Label>Category</Label>
-          <select
+          <input
             name="category"
-            defaultValue=""
+            list="portfolio-categories"
+            placeholder="Braids"
             className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">Select…</option>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
+          />
+          <datalist id="portfolio-categories">
+            {CATEGORIES.map((c) => <option key={c} value={c} />)}
+          </datalist>
         </div>
       </div>
       <div>

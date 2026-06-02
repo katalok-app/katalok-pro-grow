@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { CheckCircle2, Loader2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { createWaitlistSignup } from "@/lib/waitlist.functions";
 
 const PROFESSIONS = ["Hairstylist", "Barber", "Nail Technician", "Makeup Artist", "Other"];
 
@@ -18,10 +20,13 @@ const schema = z.object({
 
 export function Waitlist() {
   const navigate = useNavigate();
+  const submitWaitlistSignup = useServerFn(createWaitlistSignup);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
+  const [profession, setProfession] = useState("");
+  const [consent, setConsent] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -36,7 +41,7 @@ export function Waitlist() {
         profession: form.get("profession"),
         social_link: form.get("social_link"),
         years_experience: form.get("years_experience") || undefined,
-        consent: form.get("consent") === "on",
+        consent,
       });
 
       // Upload sample work to storage first
@@ -52,9 +57,8 @@ export function Waitlist() {
         sample_work_urls.push(data.publicUrl);
       }
 
-      const { data, error: insErr } = await supabase
-        .from("waitlist_signups")
-        .insert({
+      const data = await submitWaitlistSignup({
+        data: {
           full_name: parsed.full_name,
           phone: parsed.phone,
           city: parsed.city,
@@ -63,10 +67,8 @@ export function Waitlist() {
           years_experience: parsed.years_experience ?? null,
           sample_work_urls,
           consent: parsed.consent,
-        })
-        .select("id")
-        .single();
-      if (insErr) throw insErr;
+        },
+      });
 
       // Store signup id locally so the user can continue onboarding
       localStorage.setItem("katalok.signup_id", data.id);
@@ -129,15 +131,21 @@ export function Waitlist() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>Profession</Label>
-              <select
-                name="profession"
-                required
-                defaultValue=""
-                className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="" disabled>Select…</option>
-                {PROFESSIONS.map((p) => <option key={p}>{p}</option>)}
-              </select>
+              <input type="hidden" name="profession" value={profession} />
+              <div className="mt-1.5 grid gap-2">
+                {PROFESSIONS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    aria-pressed={profession === p}
+                    onClick={() => setProfession(p)}
+                    className="flex min-h-11 items-center gap-2 rounded-xl border border-input bg-background px-3 text-left text-sm text-foreground transition hover:bg-secondary aria-pressed:border-primary aria-pressed:bg-primary/10"
+                  >
+                    <span className={`h-4 w-4 rounded-full border ${profession === p ? "border-primary bg-primary shadow-[inset_0_0_0_4px_var(--background)]" : "border-input"}`} />
+                    <span>{p}</span>
+                  </button>
+                ))}
+              </div>
             </div>
             <Field label="Years of experience" name="years_experience" type="number" min={0} placeholder="3" />
           </div>
@@ -158,10 +166,17 @@ export function Waitlist() {
             </label>
           </div>
 
-          <label className="flex items-start gap-3 text-sm text-muted-foreground">
-            <input type="checkbox" name="consent" required className="mt-1 h-4 w-4 rounded border-input accent-primary" />
+          <button
+            type="button"
+            aria-pressed={consent}
+            onClick={() => setConsent((value) => !value)}
+            className="flex items-start gap-3 text-left text-sm text-muted-foreground"
+          >
+            <span className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${consent ? "border-primary bg-primary text-primary-foreground" : "border-input"}`}>
+              {consent && <CheckCircle2 className="h-3 w-3" />}
+            </span>
             <span>I agree to be contacted by Katalok about early access and accept the privacy policy.</span>
-          </label>
+          </button>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 

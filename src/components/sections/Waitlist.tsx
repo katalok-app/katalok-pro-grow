@@ -62,6 +62,7 @@ function newDraft(): DraftPost {
 
 export function Waitlist() {
   const submit = useServerFn(submitWaitlistApplication);
+  const uploadImage = useServerFn(uploadPortfolioImage);
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);

@@ -6,7 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { submitWaitlistApplication } from "@/lib/waitlist.functions";
 import { CATEGORIES } from "@/lib/categories";
 
-const PROFESSIONS = ["Hairstylist", "Barber", "Nail Technician", "Makeup Artist", "Other"] as const;
+const WORK_LOCATIONS = [
+  { value: "home", label: "I work from home" },
+  { value: "salon", label: "I work from a salon" },
+] as const;
+type WorkLocation = typeof WORK_LOCATIONS[number]["value"];
 
 type DraftPost = {
   id: string;
@@ -23,7 +27,7 @@ type PostsByCategory = Record<string, DraftPost[]>;
 const stepOneSchema = z.object({
   full_name: z.string().trim().min(2, "Enter your full name").max(100),
   phone: z.string().trim().min(6, "Enter a valid phone").max(30),
-  profession: z.enum(PROFESSIONS, { errorMap: () => ({ message: "Select your profession" }) }),
+  work_location: z.enum(["home", "salon"], { errorMap: () => ({ message: "Select where you work" }) }),
   years_experience: z.coerce.number().int().min(0).max(80).optional(),
   social_link: z.string().trim().max(255).optional().or(z.literal("")),
 });
@@ -54,7 +58,7 @@ export function Waitlist() {
   const [success, setSuccess] = useState(false);
 
   // Step 1
-  const [profession, setProfession] = useState<typeof PROFESSIONS[number] | "">("");
+  const [workLocation, setWorkLocation] = useState<WorkLocation | "">("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [years, setYears] = useState("");
@@ -107,7 +111,7 @@ export function Waitlist() {
       const r = stepOneSchema.safeParse({
         full_name: fullName,
         phone,
-        profession,
+        work_location: workLocation,
         years_experience: years || undefined,
         social_link: social,
       });
@@ -186,7 +190,7 @@ export function Waitlist() {
           city: city.trim(),
           quarter: quarter.trim(),
           business_name: businessName.trim(),
-          profession: profession as typeof PROFESSIONS[number],
+          work_location: workLocation as WorkLocation,
           social_link: social.trim(),
           years_experience: years ? Number(years) : null,
           services,
@@ -246,23 +250,23 @@ export function Waitlist() {
                   <Input label="Years of experience" value={years} onChange={setYears} type="number" min={0} placeholder="3" />
                 </div>
                 <div>
-                  <Label>Profession</Label>
+                  <Label>Where do you work?</Label>
                   <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
-                    {PROFESSIONS.map((p) => (
+                    {WORK_LOCATIONS.map((opt) => (
                       <button
-                        key={p}
+                        key={opt.value}
                         type="button"
-                        aria-pressed={profession === p}
-                        onClick={() => setProfession(p)}
+                        aria-pressed={workLocation === opt.value}
+                        onClick={() => setWorkLocation(opt.value)}
                         className="flex min-h-11 items-center gap-2 rounded-xl border border-input bg-background px-3 text-left text-sm transition hover:bg-secondary aria-pressed:border-primary aria-pressed:bg-primary/10"
                       >
-                        <span className={`h-4 w-4 rounded-full border ${profession === p ? "border-primary bg-primary shadow-[inset_0_0_0_4px_var(--background)]" : "border-input"}`} />
-                        <span>{p}</span>
+                        <span className={`h-4 w-4 rounded-full border ${workLocation === opt.value ? "border-primary bg-primary shadow-[inset_0_0_0_4px_var(--background)]" : "border-input"}`} />
+                        <span>{opt.label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
-                <Input label="Instagram / Social link" value={social} onChange={setSocial} placeholder="instagram.com/yourhandle" />
+                <Input label="Social media link (any platform)" value={social} onChange={setSocial} placeholder="Instagram, TikTok, Facebook… paste any profile link" />
               </>
             )}
 

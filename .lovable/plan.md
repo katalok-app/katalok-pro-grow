@@ -1,66 +1,22 @@
-## Goal
-Merge the prelaunch onboarding flow into the waitlist form so professionals submit everything in one place: identity, business, location detail, the services they offer, and portfolio posts (with images) under each service.
+## Changes to the waitlist form (Step 1)
 
-## New waitlist form structure
+1. **Remove** the "Profession" chip selector.
+2. **Add** a "Where do you work?" selector with two options:
+   - Home-based
+   - Salon-based
+   (Single-select chips, required.)
+3. **Social link**: relabel from "Instagram / social link" to "Social media link (any platform)" with placeholder like `https://… (Instagram, TikTok, Facebook, etc.)`. Keep it optional, accept any URL.
 
-A single multi-step form on the homepage `Waitlist` section (no more redirect to `/onboarding`).
+## Files to update
 
-**Step 1 — About you**
-- Full name
-- Phone
-- Profession (existing chips)
-- Years of experience (existing)
-- Social link (existing)
-- Consent (existing)
+- `src/components/sections/Waitlist.tsx` — replace profession chips with work-location chips; update form state, validation, and submit payload; relabel social link input + placeholder.
+- `src/lib/waitlist.functions.ts` — Zod schema: drop `profession` enum, add `work_location: z.enum(["home", "salon"])`; loosen `social_link` to any trimmed string up to 255 chars (already permissive); pass `work_location` into both `waitlist_signups` and `pro_profiles` inserts instead of `profession`.
 
-**Step 2 — Your business**
-- Business name (new, required)
-- City (existing)
-- Quarter / neighborhood (new, required — free text, e.g. "Bonamoussadi")
+## Database migration
 
-**Step 3 — Services & portfolio**
-- Multi-select chips of the 15 categories from `src/lib/categories.ts` (Braids, Nails, Make up, …).
-- For each selected category, an expandable block lets the user add one or more **posts**:
-  - Images (up to 6, uploaded to the existing `portfolio` storage bucket)
-  - Service type / title (e.g. "Boho braids")
-  - Price (XAF)
-  - Duration (minutes)
-  - Caption / description (optional)
-- "Add another post" button per category. Posts can be removed before submit.
-- At least one category required; posts are optional but encouraged with helper copy.
-
-On submit: create the waitlist signup, the pro profile, and all portfolio posts in one server call. Show a success state ("You're in — we'll review your profile") instead of routing to `/onboarding`.
-
-## Data model changes
-
-Add columns via one migration:
-- `waitlist_signups`: `business_name text`, `quarter text`, `services text[] default '{}'`
-- `pro_profiles`: `business_name text`, `quarter text`
-- `portfolio_posts`: already has everything needed (uses existing `service_title`, `price`, `duration_minutes`, `category`, `description`, `image_urls`).
-
-No RLS changes — writes continue going through `supabaseAdmin` in server functions.
-
-## Server function changes
-
-Replace `createWaitlistSignup` in `src/lib/waitlist.functions.ts` with a single `submitWaitlistApplication` server fn that accepts:
-```
-{ signup fields, business_name, quarter, services[], posts: [{ category, service_title, price, duration_minutes, description, image_urls[] }] }
-```
-It inserts the signup, inserts the `pro_profiles` row linked by `signup_id`, then bulk-inserts all `portfolio_posts` linked to the new profile. Returns `{ signup_id }`.
-
-Image uploads still happen client-side to the `portfolio` bucket (same pattern as today's `PortfolioForm`), then the resulting public URLs are passed into the server fn.
-
-## Frontend changes
-
-- Rewrite `src/components/sections/Waitlist.tsx` as a 3-step form with progress indicator, keeping existing visual tokens.
-- Build a small `ServicePostsEditor` subcomponent that renders per-category accordion with nested post cards.
-- Remove the "continue to /onboarding" redirect; show inline success.
-- Keep `/onboarding` route file in place for now (still works for returning users), but homepage flow no longer depends on it.
-
-## Validation
-- Zod schema on both client and server: business_name 2–120, quarter 2–80, services min 1, each post requires service_title (2–120) and category; price/duration optional but numeric.
-- Max 10 posts per submission to prevent abuse.
+Add `work_location text` to both `waitlist_signups` and `pro_profiles`. Keep the existing `profession` columns nullable for backward compatibility (no data loss, no destructive change). New submissions will write `work_location` and leave `profession` null.
 
 ## Out of scope
-- Editing posts after submit (still handled by `/onboarding` page).
-- Admin approval UI.
+
+- Editing `/onboarding` page (still references profession; can be addressed separately if needed).
+- Removing the legacy `profession` column.

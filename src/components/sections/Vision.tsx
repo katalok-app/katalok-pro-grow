@@ -16,7 +16,7 @@ export function Vision() {
           </h2>
           <p className="mt-5 max-w-xl text-primary-foreground/80">
             Katalok is building the infrastructure for the next generation of beauty
-            businesses across Africa — starting with Cameroon, designed for everywhere.
+            businesses across Africa — starting with Cameroon, designed for everyone.
           </p>
           <a href="#waitlist" className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-primary-foreground px-6 py-3.5 text-sm font-medium text-cocoa transition-transform hover:scale-[1.02]">
             Reserve my spot

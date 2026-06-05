@@ -2,9 +2,20 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { CheckCircle2, Loader2, Plus, Trash2, Upload, ChevronLeft, ChevronRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { submitWaitlistApplication } from "@/lib/waitlist.functions";
+import { uploadPortfolioImage } from "@/lib/storage.functions";
 import { CATEGORIES } from "@/lib/categories";
+
+async function fileToBase64(file: File): Promise<string> {
+  const buf = await file.arrayBuffer();
+  let binary = "";
+  const bytes = new Uint8Array(buf);
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
+  }
+  return btoa(binary);
+}
 
 const WORK_LOCATIONS = [
   { value: "home", label: "I work from home" },

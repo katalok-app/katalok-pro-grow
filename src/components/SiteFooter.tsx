@@ -19,7 +19,8 @@ export function SiteFooter() {
         <div className="text-sm">
           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Contact</p>
           <a href="mailto:katalok.app@gmail.com" className="mt-3 inline-flex items-center gap-2 text-foreground hover:text-primary">
-            <Mail className="h-4 w-4" /> katalok.app@gmail.com
+            <Mail className="h-4 w-4" />
+            <span>katalok.app@gmail.com</span>
           </a>
         </div>
 

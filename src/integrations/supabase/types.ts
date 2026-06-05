@@ -64,12 +64,14 @@ export type Database = {
       pro_profiles: {
         Row: {
           bio: string | null
+          business_name: string | null
           city: string
           created_at: string
           id: string
           name: string
           phone: string
           profession: string
+          quarter: string | null
           signup_id: string
           social_link: string | null
           status: string
@@ -77,12 +79,14 @@ export type Database = {
         }
         Insert: {
           bio?: string | null
+          business_name?: string | null
           city: string
           created_at?: string
           id?: string
           name: string
           phone: string
           profession: string
+          quarter?: string | null
           signup_id: string
           social_link?: string | null
           status?: string
@@ -90,12 +94,14 @@ export type Database = {
         }
         Update: {
           bio?: string | null
+          business_name?: string | null
           city?: string
           created_at?: string
           id?: string
           name?: string
           phone?: string
           profession?: string
+          quarter?: string | null
           signup_id?: string
           social_link?: string | null
           status?: string
@@ -113,6 +119,7 @@ export type Database = {
       }
       waitlist_signups: {
         Row: {
+          business_name: string | null
           city: string
           consent: boolean
           created_at: string
@@ -120,12 +127,15 @@ export type Database = {
           id: string
           phone: string
           profession: string
+          quarter: string | null
           sample_work_urls: string[] | null
+          services: string[]
           social_link: string | null
           status: string
           years_experience: number | null
         }
         Insert: {
+          business_name?: string | null
           city: string
           consent?: boolean
           created_at?: string
@@ -133,12 +143,15 @@ export type Database = {
           id?: string
           phone: string
           profession: string
+          quarter?: string | null
           sample_work_urls?: string[] | null
+          services?: string[]
           social_link?: string | null
           status?: string
           years_experience?: number | null
         }
         Update: {
+          business_name?: string | null
           city?: string
           consent?: boolean
           created_at?: string
@@ -146,7 +159,9 @@ export type Database = {
           id?: string
           phone?: string
           profession?: string
+          quarter?: string | null
           sample_work_urls?: string[] | null
+          services?: string[]
           social_link?: string | null
           status?: string
           years_experience?: number | null

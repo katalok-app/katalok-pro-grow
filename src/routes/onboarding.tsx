@@ -316,6 +316,7 @@ function PortfolioForm({
   profileId, onCreated, onCancel,
 }: { profileId: string; onCreated: (p: PortfolioRow) => void; onCancel: () => void }) {
   const submitPortfolioPost = useServerFn(createPortfolioPost);
+  const uploadImage = useServerFn(uploadPortfolioImage);
   const [files, setFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -335,10 +336,18 @@ function PortfolioForm({
       });
       const image_urls: string[] = [];
       for (const f of files.slice(0, 6)) {
-        const key = `posts/${profileId}/${crypto.randomUUID()}-${f.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-        const { error: upErr } = await supabase.storage.from("portfolio").upload(key, f);
-        if (upErr) throw upErr;
-        image_urls.push(supabase.storage.from("portfolio").getPublicUrl(key).data.publicUrl);
+        if (f.size > 5 * 1024 * 1024) throw new Error(`${f.name} is larger than 5MB`);
+        const data_base64 = await fileToBase64(f);
+        const res = await uploadImage({
+          data: {
+            filename: f.name,
+            content_type: f.type || "image/jpeg",
+            data_base64,
+            folder: "onboarding",
+            profile_id: profileId,
+          },
+        });
+        image_urls.push(res.url);
       }
       const data = await submitPortfolioPost({
         data: {

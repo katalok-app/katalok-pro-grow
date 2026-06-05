@@ -3,11 +3,22 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckCircle2, ImagePlus, Loader2, Plus, Trash2, ArrowLeft } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { CATEGORIES } from "@/lib/categories";
 import { createPortfolioPost, deletePortfolioPost, getOnboardingData, saveProProfile } from "@/lib/onboarding.functions";
+import { uploadPortfolioImage } from "@/lib/storage.functions";
+
+async function fileToBase64(file: File): Promise<string> {
+  const buf = await file.arrayBuffer();
+  let binary = "";
+  const bytes = new Uint8Array(buf);
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
+  }
+  return btoa(binary);
+}
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({

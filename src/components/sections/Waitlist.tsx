@@ -2,9 +2,20 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { CheckCircle2, Loader2, Plus, Trash2, Upload, ChevronLeft, ChevronRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { submitWaitlistApplication } from "@/lib/waitlist.functions";
+import { uploadPortfolioImage } from "@/lib/storage.functions";
 import { CATEGORIES } from "@/lib/categories";
+
+async function fileToBase64(file: File): Promise<string> {
+  const buf = await file.arrayBuffer();
+  let binary = "";
+  const bytes = new Uint8Array(buf);
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
+  }
+  return btoa(binary);
+}
 
 const WORK_LOCATIONS = [
   { value: "home", label: "I work from home" },
@@ -51,6 +62,7 @@ function newDraft(): DraftPost {
 
 export function Waitlist() {
   const submit = useServerFn(submitWaitlistApplication);
+  const uploadImage = useServerFn(uploadPortfolioImage);
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -163,13 +175,17 @@ export function Waitlist() {
 
           const image_urls: string[] = [];
           for (const f of p.files.slice(0, 6)) {
-            const key = `posts/${crypto.randomUUID()}-${f.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-            const { error: upErr } = await supabase.storage.from("portfolio").upload(key, f, {
-              cacheControl: "3600",
-              upsert: false,
+            if (f.size > 5 * 1024 * 1024) throw new Error(`${f.name} is larger than 5MB`);
+            const data_base64 = await fileToBase64(f);
+            const res = await uploadImage({
+              data: {
+                filename: f.name,
+                content_type: f.type || "image/jpeg",
+                data_base64,
+                folder: "waitlist",
+              },
             });
-            if (upErr) throw upErr;
-            image_urls.push(supabase.storage.from("portfolio").getPublicUrl(key).data.publicUrl);
+            image_urls.push(res.url);
           }
 
           uploadedPosts.push({

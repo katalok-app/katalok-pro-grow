@@ -3,11 +3,22 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { CheckCircle2, ImagePlus, Loader2, Plus, Trash2, ArrowLeft } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { CATEGORIES } from "@/lib/categories";
 import { createPortfolioPost, deletePortfolioPost, getOnboardingData, saveProProfile } from "@/lib/onboarding.functions";
+import { uploadPortfolioImage } from "@/lib/storage.functions";
+
+async function fileToBase64(file: File): Promise<string> {
+  const buf = await file.arrayBuffer();
+  let binary = "";
+  const bytes = new Uint8Array(buf);
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
+  }
+  return btoa(binary);
+}
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -305,6 +316,7 @@ function PortfolioForm({
   profileId, onCreated, onCancel,
 }: { profileId: string; onCreated: (p: PortfolioRow) => void; onCancel: () => void }) {
   const submitPortfolioPost = useServerFn(createPortfolioPost);
+  const uploadImage = useServerFn(uploadPortfolioImage);
   const [files, setFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -324,10 +336,18 @@ function PortfolioForm({
       });
       const image_urls: string[] = [];
       for (const f of files.slice(0, 6)) {
-        const key = `posts/${profileId}/${crypto.randomUUID()}-${f.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-        const { error: upErr } = await supabase.storage.from("portfolio").upload(key, f);
-        if (upErr) throw upErr;
-        image_urls.push(supabase.storage.from("portfolio").getPublicUrl(key).data.publicUrl);
+        if (f.size > 5 * 1024 * 1024) throw new Error(`${f.name} is larger than 5MB`);
+        const data_base64 = await fileToBase64(f);
+        const res = await uploadImage({
+          data: {
+            filename: f.name,
+            content_type: f.type || "image/jpeg",
+            data_base64,
+            folder: "onboarding",
+            profile_id: profileId,
+          },
+        });
+        image_urls.push(res.url);
       }
       const data = await submitPortfolioPost({
         data: {

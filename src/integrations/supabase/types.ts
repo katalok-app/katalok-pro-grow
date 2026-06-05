@@ -70,12 +70,13 @@ export type Database = {
           id: string
           name: string
           phone: string
-          profession: string
+          profession: string | null
           quarter: string | null
           signup_id: string
           social_link: string | null
           status: string
           updated_at: string
+          work_location: string | null
         }
         Insert: {
           bio?: string | null
@@ -85,12 +86,13 @@ export type Database = {
           id?: string
           name: string
           phone: string
-          profession: string
+          profession?: string | null
           quarter?: string | null
           signup_id: string
           social_link?: string | null
           status?: string
           updated_at?: string
+          work_location?: string | null
         }
         Update: {
           bio?: string | null
@@ -100,12 +102,13 @@ export type Database = {
           id?: string
           name?: string
           phone?: string
-          profession?: string
+          profession?: string | null
           quarter?: string | null
           signup_id?: string
           social_link?: string | null
           status?: string
           updated_at?: string
+          work_location?: string | null
         }
         Relationships: [
           {
@@ -126,12 +129,13 @@ export type Database = {
           full_name: string
           id: string
           phone: string
-          profession: string
+          profession: string | null
           quarter: string | null
           sample_work_urls: string[] | null
           services: string[]
           social_link: string | null
           status: string
+          work_location: string | null
           years_experience: number | null
         }
         Insert: {
@@ -142,12 +146,13 @@ export type Database = {
           full_name: string
           id?: string
           phone: string
-          profession: string
+          profession?: string | null
           quarter?: string | null
           sample_work_urls?: string[] | null
           services?: string[]
           social_link?: string | null
           status?: string
+          work_location?: string | null
           years_experience?: number | null
         }
         Update: {
@@ -158,12 +163,13 @@ export type Database = {
           full_name?: string
           id?: string
           phone?: string
-          profession?: string
+          profession?: string | null
           quarter?: string | null
           sample_work_urls?: string[] | null
           services?: string[]
           social_link?: string | null
           status?: string
+          work_location?: string | null
           years_experience?: number | null
         }
         Relationships: []

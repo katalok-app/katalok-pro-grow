@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_signups: {
+        Row: {
+          city: string
+          consent: boolean
+          created_at: string
+          full_name: string
+          id: string
+          phone: string
+          quarter: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          city: string
+          consent?: boolean
+          created_at?: string
+          full_name: string
+          id?: string
+          phone: string
+          quarter: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          consent?: boolean
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string
+          quarter?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       portfolio_posts: {
         Row: {
           category: string | null

@@ -7,16 +7,12 @@ export function SiteFooter() {
       <div className="container-page grid gap-10 py-14 md:grid-cols-3">
         <div>
           <Logo className="h-14 w-auto" />
-          <p className="mt-4 max-w-xs font-display text-base italic text-muted-foreground">
-            “Book fine. Show up. Be served.”
-          </p>
-          <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-            A beauty booking platform that makes reliability the standard and dignity the floor —
-            starting in Cameroon.
+          <p className="mt-4 max-w-xs text-sm text-muted-foreground">
+            A beauty discovery & booking platform built for African markets.
           </p>
           <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-accent/15 px-3 py-1 text-xs font-medium text-cocoa">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
-            Launching soon — Douala &amp; Yaoundé
+            Launching soon — Cameroon first
           </span>
         </div>
 

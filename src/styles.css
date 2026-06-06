@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: "Cormorant Garamond", ui-serif, Georgia, serif;
-  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -40,10 +40,6 @@
   --color-cocoa: var(--cocoa);
   --color-caramel: var(--caramel);
   --color-sand: var(--sand);
-  --color-gold: var(--gold);
-  --color-espresso: var(--espresso);
-  --color-espresso-deep: var(--espresso-deep);
-  --color-cedar: var(--cedar);
 
   --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-marquee: marquee 40s linear infinite;
@@ -52,51 +48,45 @@
 :root {
   --radius: 1rem;
 
-  /* Linen backdrop, ink foreground — from Katalok Brand Bible */
-  --background: oklch(0.98 0.018 88);
-  --foreground: oklch(0.18 0.025 50);
+  /* Warm cream backdrop, deep cocoa ink */
+  --background: oklch(0.975 0.012 78);
+  --foreground: oklch(0.22 0.04 50);
 
-  --card: oklch(0.965 0.022 85);
-  --card-foreground: oklch(0.18 0.025 50);
-  --popover: oklch(0.98 0.018 88);
-  --popover-foreground: oklch(0.18 0.025 50);
+  --card: oklch(0.985 0.008 80);
+  --card-foreground: oklch(0.22 0.04 50);
+  --popover: oklch(0.985 0.008 80);
+  --popover-foreground: oklch(0.22 0.04 50);
 
-  /* Espresso primary — bible #3D2B1F */
-  --primary: oklch(0.30 0.04 50);
-  --primary-foreground: oklch(0.98 0.018 88);
+  /* Chocolate brown — matches the Katalok logo */
+  --primary: oklch(0.42 0.075 50);
+  --primary-foreground: oklch(0.975 0.012 78);
 
-  --secondary: oklch(0.93 0.03 80);
-  --secondary-foreground: oklch(0.30 0.04 50);
+  --secondary: oklch(0.93 0.025 75);
+  --secondary-foreground: oklch(0.30 0.05 50);
 
-  --muted: oklch(0.945 0.022 82);
-  --muted-foreground: oklch(0.48 0.035 70);
+  --muted: oklch(0.945 0.018 78);
+  --muted-foreground: oklch(0.48 0.04 55);
 
-  /* Gold accent — bible #D4AF37 */
-  --accent: oklch(0.78 0.13 85);
-  --accent-foreground: oklch(0.20 0.03 50);
+  --accent: oklch(0.66 0.12 55);
+  --accent-foreground: oklch(0.18 0.04 50);
 
   --destructive: oklch(0.55 0.20 25);
   --destructive-foreground: oklch(0.98 0.01 80);
 
-  --border: oklch(0.87 0.03 75);
-  --input: oklch(0.87 0.03 75);
-  --ring: oklch(0.50 0.075 55);
+  --border: oklch(0.88 0.025 70);
+  --input: oklch(0.88 0.025 70);
+  --ring: oklch(0.55 0.09 55);
 
-  --cream: oklch(0.98 0.018 88);
-  --warm: oklch(0.95 0.028 82);
-  --sand: oklch(0.82 0.09 80);
-  --caramel: oklch(0.66 0.10 65);
-  --cedar: oklch(0.50 0.075 55);
-  --mocha: oklch(0.50 0.075 55);
-  --cocoa: oklch(0.20 0.035 50);
-  --espresso: oklch(0.30 0.04 50);
-  --espresso-deep: oklch(0.20 0.035 50);
-  --gold: oklch(0.78 0.13 85);
+  --cream: oklch(0.975 0.012 78);
+  --sand: oklch(0.91 0.035 75);
+  --caramel: oklch(0.66 0.12 55);
+  --mocha: oklch(0.45 0.075 50);
+  --cocoa: oklch(0.30 0.05 50);
 
-  --gradient-warm: linear-gradient(135deg, oklch(0.98 0.018 88) 0%, oklch(0.93 0.04 82) 55%, oklch(0.82 0.09 80) 100%);
-  --gradient-cocoa: linear-gradient(180deg, oklch(0.30 0.04 50) 0%, oklch(0.18 0.03 50) 100%);
-  --shadow-soft: 0 1px 2px oklch(0.20 0.03 50 / 0.05), 0 10px 30px -12px oklch(0.20 0.03 50 / 0.18);
-  --shadow-glow: 0 20px 60px -20px oklch(0.30 0.04 50 / 0.35);
+  --gradient-warm: linear-gradient(135deg, oklch(0.97 0.018 80) 0%, oklch(0.91 0.035 75) 60%, oklch(0.82 0.06 60) 100%);
+  --gradient-cocoa: linear-gradient(180deg, oklch(0.42 0.075 50) 0%, oklch(0.30 0.05 50) 100%);
+  --shadow-soft: 0 1px 2px oklch(0.30 0.05 50 / 0.05), 0 10px 30px -12px oklch(0.30 0.05 50 / 0.18);
+  --shadow-glow: 0 20px 60px -20px oklch(0.42 0.075 50 / 0.35);
 }
 
 .dark {
@@ -137,12 +127,8 @@
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.015em;
+    letter-spacing: -0.02em;
     font-weight: 500;
-  }
-  h1 em, h2 em, h3 em, h4 em {
-    font-style: italic;
-    color: var(--cedar);
   }
 }
 
@@ -151,7 +137,7 @@
     @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
   }
   .eyebrow {
-    @apply inline-flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.28em] text-cedar;
+    @apply inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1 text-xs uppercase tracking-[0.18em] text-muted-foreground;
   }
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-95 hover:shadow-[var(--shadow-glow)] active:scale-[0.98];

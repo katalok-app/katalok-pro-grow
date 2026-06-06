@@ -77,11 +77,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#FFF9F0" },
-      { title: "Katalok — Book fine. Show up. Be served." },
-      { name: "description", content: "Katalok is the beauty booking platform where skill is the only currency and reliability is the standard — for every woman and every stylist in Cameroon." },
-      { property: "og:title", content: "Katalok — Book fine. Show up. Be served." },
-      { property: "og:description", content: "A beauty booking platform that makes reliability the standard and dignity the floor — for every woman and every stylist in Cameroon." },
+      { name: "theme-color", content: "#f7f1e6" },
+      { title: "Katalok — for beauty professionals" },
+      { name: "description", content: "Get discovered. Get booked. Grow your beauty business with Katalok." },
+      { property: "og:title", content: "Katalok — for beauty professionals" },
+      { property: "og:description", content: "Get discovered. Get booked. Grow your beauty business with Katalok." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -90,7 +90,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600;1,700&family=Outfit:wght@300;400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap",
       },
       {
         rel: "stylesheet",

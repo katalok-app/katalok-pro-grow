@@ -16,12 +16,12 @@ export function Waitlist() {
     return (
       <section id="waitlist" className="container-page py-20 md:py-28">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="eyebrow">Early access</span>
+          <span className="eyebrow">Early Access</span>
           <h2 className="mt-4 text-3xl sm:text-4xl md:text-5xl">
-            Join the <span className="italic text-mocha">Katalok waitlist</span>
+            Join the <em>Katalok</em> waitlist
           </h2>
-          <p className="mt-4 text-muted-foreground">
-            Tell us a bit about you so we can get you set up at launch.
+          <p className="mt-4 font-display text-lg italic text-muted-foreground">
+            She's got you. Tell us who you are so we can get you set up at launch.
           </p>
         </div>
 
@@ -34,9 +34,9 @@ export function Waitlist() {
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
               <Scissors className="h-5 w-5" />
             </span>
-            <h3 className="text-lg">I'm a beauty professional</h3>
+            <h3 className="font-display text-xl">I'm a beauty professional</h3>
             <p className="text-sm text-muted-foreground">
-              Showcase your work, get bookings, and grow your business.
+              Where skill is the currency. Showcase your work, get serious bookings, grow on your terms.
             </p>
             <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
               Start pro signup <ChevronRight className="h-3.5 w-3.5" />
@@ -48,12 +48,12 @@ export function Waitlist() {
             onClick={() => setRole("client")}
             className="card-soft group flex flex-col items-start gap-3 p-6 text-left transition hover:border-primary hover:shadow-md"
           >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-cocoa">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/20 text-cocoa">
               <Sparkles className="h-5 w-5" />
             </span>
-            <h3 className="text-lg">I'm a client</h3>
+            <h3 className="font-display text-xl">I'm a client</h3>
             <p className="text-sm text-muted-foreground">
-              Discover trusted beauty pros near you and book in a few taps.
+              Book fine. Show up. Be served. Discover trusted pros near you and book in a few taps.
             </p>
             <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
               Join client waitlist <ChevronRight className="h-3.5 w-3.5" />

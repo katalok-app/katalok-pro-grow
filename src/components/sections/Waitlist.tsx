@@ -409,7 +409,7 @@ function ProWaitlist() {
   }
 
   return (
-    <section id="waitlist" className="relative">
+    <section className="relative">
       <div className="container-page py-20 md:py-28">
         <div className="mx-auto max-w-2xl text-center">
           <span className="eyebrow">Early access</span>

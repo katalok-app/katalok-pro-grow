@@ -1,10 +1,178 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { CheckCircle2, Loader2, Plus, Trash2, Upload, ChevronLeft, ChevronRight } from "lucide-react";
+import { CheckCircle2, Loader2, Plus, Trash2, Upload, ChevronLeft, ChevronRight, Sparkles, Scissors, ArrowLeft } from "lucide-react";
 import { submitWaitlistApplication } from "@/lib/waitlist.functions";
+import { submitClientSignup } from "@/lib/client-signup.functions";
 import { uploadPortfolioImage } from "@/lib/storage.functions";
 import { CATEGORIES } from "@/lib/categories";
+
+type Role = "pro" | "client";
+
+export function Waitlist() {
+  const [role, setRole] = useState<Role | null>(null);
+
+  if (role === null) {
+    return (
+      <section id="waitlist" className="container-page py-20 md:py-28">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="eyebrow">Early access</span>
+          <h2 className="mt-4 text-3xl sm:text-4xl md:text-5xl">
+            Join the <span className="italic text-mocha">Katalok waitlist</span>
+          </h2>
+          <p className="mt-4 text-muted-foreground">
+            Tell us a bit about you so we can get you set up at launch.
+          </p>
+        </div>
+
+        <div className="mx-auto mt-10 grid max-w-3xl gap-4 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => setRole("pro")}
+            className="card-soft group flex flex-col items-start gap-3 p-6 text-left transition hover:border-primary hover:shadow-md"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Scissors className="h-5 w-5" />
+            </span>
+            <h3 className="text-lg">I'm a beauty professional</h3>
+            <p className="text-sm text-muted-foreground">
+              Showcase your work, get bookings, and grow your business.
+            </p>
+            <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
+              Start pro signup <ChevronRight className="h-3.5 w-3.5" />
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setRole("client")}
+            className="card-soft group flex flex-col items-start gap-3 p-6 text-left transition hover:border-primary hover:shadow-md"
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-cocoa">
+              <Sparkles className="h-5 w-5" />
+            </span>
+            <h3 className="text-lg">I'm a client</h3>
+            <p className="text-sm text-muted-foreground">
+              Discover trusted beauty pros near you and book in a few taps.
+            </p>
+            <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
+              Join client waitlist <ChevronRight className="h-3.5 w-3.5" />
+            </span>
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <div id="waitlist">
+      <div className="container-page pt-10">
+        <button
+          type="button"
+          onClick={() => setRole(null)}
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Change
+        </button>
+      </div>
+      {role === "pro" ? <ProWaitlist /> : <ClientWaitlist />}
+    </div>
+  );
+}
+
+function ClientWaitlist() {
+  const submit = useServerFn(submitClientSignup);
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [city, setCity] = useState("");
+  const [quarter, setQuarter] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const schema = z.object({
+    full_name: z.string().trim().min(2, "Enter your full name").max(100),
+    phone: z.string().trim().min(6, "Enter your WhatsApp number").max(30),
+    city: z.string().trim().min(2, "City required").max(80),
+    quarter: z.string().trim().min(2, "Town / quarter required").max(80),
+  });
+
+  async function onSubmit() {
+    setError(null);
+    if (!consent) return setError("Please accept to continue");
+    const r = schema.safeParse({ full_name: fullName, phone, city, quarter });
+    if (!r.success) return setError(r.error.errors[0].message);
+    setLoading(true);
+    try {
+      await submit({
+        data: { full_name: fullName.trim(), phone: phone.trim(), city: city.trim(), quarter: quarter.trim(), consent: true },
+      });
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (success) {
+    return (
+      <section className="container-page py-16 md:py-24">
+        <div className="card-soft mx-auto max-w-xl p-10 text-center">
+          <CheckCircle2 className="mx-auto h-12 w-12 text-accent" />
+          <h2 className="mt-4 text-3xl">You're on the list 🎉</h2>
+          <p className="mt-3 text-muted-foreground">
+            Thanks {fullName.split(" ")[0]}. We'll message you on{" "}
+            <span className="font-medium text-foreground">{phone}</span> as soon as Katalok launches in your area.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="container-page py-12 md:py-20">
+      <div className="mx-auto max-w-xl text-center">
+        <span className="eyebrow">Client waitlist</span>
+        <h2 className="mt-4 text-3xl sm:text-4xl">
+          Get notified at <span className="italic text-mocha">launch</span>
+        </h2>
+        <p className="mt-3 text-muted-foreground">
+          Just a few details so we can let you know when pros near you are bookable.
+        </p>
+      </div>
+
+      <div className="card-soft mx-auto mt-8 grid max-w-xl gap-5 p-6 sm:p-8">
+        <Input label="Full name" value={fullName} onChange={setFullName} placeholder="Your full name" required />
+        <Input label="WhatsApp number" value={phone} onChange={setPhone} type="tel" placeholder="+237 ..." required />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Input label="City" value={city} onChange={setCity} placeholder="Douala, Yaoundé…" required />
+          <Input label="Town / quarter" value={quarter} onChange={setQuarter} placeholder="Bonamoussadi, Bastos…" required />
+        </div>
+
+        <button
+          type="button"
+          aria-pressed={consent}
+          onClick={() => setConsent((v) => !v)}
+          className="flex items-start gap-3 text-left text-sm text-muted-foreground"
+        >
+          <span className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${consent ? "border-primary bg-primary text-primary-foreground" : "border-input"}`}>
+            {consent && <CheckCircle2 className="h-3 w-3" />}
+          </span>
+          <span>I agree to be contacted by Katalok about early access and accept the privacy policy.</span>
+        </button>
+
+        {error && <p className="text-sm text-destructive">{error}</p>}
+
+        <button type="button" onClick={onSubmit} disabled={loading} className="btn-primary !px-5">
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {loading ? "Submitting…" : "Join client waitlist"}
+        </button>
+      </div>
+    </section>
+  );
+}
 
 async function fileToBase64(file: File): Promise<string> {
   const buf = await file.arrayBuffer();
@@ -60,7 +228,7 @@ function newDraft(): DraftPost {
   };
 }
 
-export function Waitlist() {
+function ProWaitlist() {
   const submit = useServerFn(submitWaitlistApplication);
   const uploadImage = useServerFn(uploadPortfolioImage);
 
@@ -227,7 +395,7 @@ export function Waitlist() {
 
   if (success) {
     return (
-      <section id="waitlist" className="container-page py-20 md:py-28">
+      <section className="container-page py-20 md:py-28">
         <div className="card-soft mx-auto max-w-xl p-10 text-center">
           <CheckCircle2 className="mx-auto h-12 w-12 text-accent" />
           <h2 className="mt-4 text-3xl">You're in 🎉</h2>
@@ -241,7 +409,7 @@ export function Waitlist() {
   }
 
   return (
-    <section id="waitlist" className="relative">
+    <section className="relative">
       <div className="container-page py-20 md:py-28">
         <div className="mx-auto max-w-2xl text-center">
           <span className="eyebrow">Early access</span>

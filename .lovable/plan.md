@@ -1,22 +1,38 @@
-## Changes to the waitlist form (Step 1)
+## Add client onboarding alongside professional waitlist
 
-1. **Remove** the "Profession" chip selector.
-2. **Add** a "Where do you work?" selector with two options:
-   - Home-based
-   - Salon-based
-   (Single-select chips, required.)
-3. **Social link**: relabel from "Instagram / social link" to "Social media link (any platform)" with placeholder like `https://… (Instagram, TikTok, Facebook, etc.)`. Keep it optional, accept any URL.
+Right now the homepage waitlist flow only collects pros. We'll add a role choice at the top of the form so visitors pick **Professional** or **Client**, then show the right fields for each.
 
-## Files to update
+### User flow
 
-- `src/components/sections/Waitlist.tsx` — replace profession chips with work-location chips; update form state, validation, and submit payload; relabel social link input + placeholder.
-- `src/lib/waitlist.functions.ts` — Zod schema: drop `profession` enum, add `work_location: z.enum(["home", "salon"])`; loosen `social_link` to any trimmed string up to 255 chars (already permissive); pass `work_location` into both `waitlist_signups` and `pro_profiles` inserts instead of `profession`.
+1. In the Waitlist section, before Step 1, show two large cards:
+   - **I'm a beauty professional** → existing multi-step pro flow (unchanged)
+   - **I'm a client** → short single-step client form
+2. A "Change" link lets them switch back to the role picker.
 
-## Database migration
+### Client form fields
 
-Add `work_location text` to both `waitlist_signups` and `pro_profiles`. Keep the existing `profession` columns nullable for backward compatibility (no data loss, no destructive change). New submissions will write `work_location` and leave `profession` null.
+- Full name
+- WhatsApp number
+- City
+- Quarter / town
+- Consent checkbox (same wording as pros)
 
-## Out of scope
+On submit → success state ("You're on the client waitlist — we'll notify you at launch"). No onboarding step 2 for clients.
 
-- Editing `/onboarding` page (still references profession; can be addressed separately if needed).
-- Removing the legacy `profession` column.
+### Where data goes
+
+New table `client_signups` (separate from `waitlist_signups` so pro pipeline stays clean):
+- `full_name`, `phone`, `city`, `quarter`, `consent`, `status` (default `new`), timestamps
+- RLS deny-all (same model as `waitlist_signups`); writes via a new `submitClientSignup` server function using `supabaseAdmin` with Zod validation
+
+### Files touched
+
+- New migration: create `client_signups` + GRANTs + RLS deny-all policy
+- New `src/lib/client-signup.functions.ts` with `submitClientSignup` server fn
+- `src/components/sections/Waitlist.tsx`: add role picker state, render either existing pro flow or new `ClientForm` subcomponent
+- Update section heading/eyebrow copy to reflect "for pros and clients"
+
+### Out of scope
+
+- No auth, no client dashboard, no `/onboarding` step for clients
+- No changes to existing pro flow fields, validation, or storage uploads

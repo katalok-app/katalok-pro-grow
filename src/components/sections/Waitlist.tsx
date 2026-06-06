@@ -228,7 +228,7 @@ function newDraft(): DraftPost {
   };
 }
 
-export function Waitlist() {
+function ProWaitlist() {
   const submit = useServerFn(submitWaitlistApplication);
   const uploadImage = useServerFn(uploadPortfolioImage);
 

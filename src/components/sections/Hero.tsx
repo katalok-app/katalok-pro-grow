@@ -15,25 +15,24 @@ export function Hero() {
       <div className="container-page grid items-center gap-12 py-16 md:grid-cols-12 md:py-24 lg:py-28">
         <div className="md:col-span-7">
           <span className="eyebrow">
-            <Sparkles className="h-3 w-3" /> For beauty professionals
+            <Sparkles className="h-3 w-3" /> Identity to Income™ · Cameroon
           </span>
-          <h1 className="mt-5 font-display text-4xl leading-[1.05] text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
-            Get Discovered.
+          <h1 className="mt-5 font-display text-4xl leading-[1.02] text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
+            Book fine.
             <br />
-            Get Booked.
+            Show up.
             <br />
-            <span className="italic text-mocha">Grow your business.</span>
+            <em className="italic" style={{ color: "var(--gold)" }}>Be served.</em>
           </h1>
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">
-            Join Katalok — the new platform helping hairstylists, nail techs, makeup
-            artists & barbers showcase their work, attract serious clients, and receive
-            structured bookings.
+            Katalok is the beauty booking platform where skill is the only currency —
+            and reliability is the standard. For every woman, every stylist, in Cameroon.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <a href="#waitlist" className="btn-primary">
-              Join the Waitlist <ArrowRight className="h-4 w-4" />
+              Reserve my spot <ArrowRight className="h-4 w-4" />
             </a>
-            <a href="#offer" className="btn-ghost">See how it works</a>
+            <a href="#how" className="btn-ghost">How it works</a>
           </div>
           <div className="mt-10 flex items-center gap-4 text-xs text-muted-foreground">
             <div className="flex -space-x-2">
@@ -47,11 +46,10 @@ export function Hero() {
                 />
               ))}
             </div>
-            Early access — limited spots in Cameroon
+            Commission-only · Zero cost to join · MoMo deposits
           </div>
         </div>
 
-        {/* Pinterest-style collage */}
         <div className="md:col-span-5">
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-3 sm:space-y-4">

@@ -395,7 +395,7 @@ function ProWaitlist() {
 
   if (success) {
     return (
-      <section id="waitlist" className="container-page py-20 md:py-28">
+      <section className="container-page py-20 md:py-28">
         <div className="card-soft mx-auto max-w-xl p-10 text-center">
           <CheckCircle2 className="mx-auto h-12 w-12 text-accent" />
           <h2 className="mt-4 text-3xl">You're in 🎉</h2>

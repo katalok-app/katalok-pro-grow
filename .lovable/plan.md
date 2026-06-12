@@ -1,38 +1,58 @@
-## Add client onboarding alongside professional waitlist
+# Make Katalok speak to clients without losing the pro focus
 
-Right now the homepage waitlist flow only collects pros. We'll add a role choice at the top of the form so visitors pick **Professional** or **Client**, then show the right fields for each.
+Pros stay the headline act. Clients get a clear, trustworthy second lane — no new pages, no restructure, just sharper copy and a visible entry point.
 
-### User flow
+## What changes
 
-1. In the Waitlist section, before Step 1, show two large cards:
-   - **I'm a beauty professional** → existing multi-step pro flow (unchanged)
-   - **I'm a client** → short single-step client form
-2. A "Change" link lets them switch back to the role picker.
+### 1. Header
+- Keep current nav as-is.
+- Replace the single "Join Waitlist" button with two compact CTAs:
+  - **Join as Pro** (primary, current style) → `#waitlist`
+  - **Find a Pro** (ghost) → `#waitlist` (scrolls to role picker, preselects client)
+- On mobile, collapse to one "Join Waitlist" that still lands at the role picker.
 
-### Client form fields
+### 2. Hero (`src/components/sections/Hero.tsx`)
+- Eyebrow stays "For beauty professionals" — pros-first signal preserved.
+- Add a one-line sub-note under the existing CTAs:
+  > "Looking for a stylist instead? **Join as a client →**" (anchor link to `#waitlist`)
+- No layout/imagery changes.
 
-- Full name
-- WhatsApp number
-- City
-- Quarter / town
-- Consent checkbox (same wording as pros)
+### 3. New small section: "For clients" strip
+- Insert a slim band between `Levels` and `Waitlist` (or right above `Waitlist`).
+- Headline: **Discover trusted beauty pros near you.**
+- Three short benefit lines (icon + label, no images):
+  - Verified portfolios — see real work before you book
+  - Pros in your city & quarter — no more endless DMs
+  - Early access — first clients get priority at launch
+- CTA: **Join as a client** → scrolls to role picker.
+- Visually lighter than pro sections (muted background, smaller type) so pros remain the dominant story.
 
-On submit → success state ("You're on the client waitlist — we'll notify you at launch"). No onboarding step 2 for clients.
+### 4. Waitlist section (`src/components/sections/Waitlist.tsx`)
+- Role picker already exists — tighten the copy:
+  - Pro card: "I'm a beauty professional — list my services and get booked."
+  - Client card: "I'm a client — find and book trusted pros near me."
+- Eyebrow above the picker: "Join the waitlist — for pros and clients."
+- Support a hash like `#waitlist?role=client` (or a small `useEffect` reading `location.hash`) so the "Find a Pro" / client CTAs land directly on the client form.
 
-### Where data goes
+### 5. Footer (`src/components/SiteFooter.tsx`)
+- Add a two-link row: "Join as a Pro" · "Join as a Client" (both → `#waitlist`).
+- Tagline copy stays.
 
-New table `client_signups` (separate from `waitlist_signups` so pro pipeline stays clean):
-- `full_name`, `phone`, `city`, `quarter`, `consent`, `status` (default `new`), timestamps
-- RLS deny-all (same model as `waitlist_signups`); writes via a new `submitClientSignup` server function using `supabaseAdmin` with Zod validation
+### 6. SEO (`src/routes/index.tsx`)
+- Update meta description to mention both audiences without burying pros:
+  > "Katalok helps African beauty pros get discovered and booked — and helps clients find trusted hairstylists, nail techs, makeup artists & barbers nearby. Join the waitlist."
+- Title unchanged.
 
-### Files touched
+## Out of scope (this round)
+- No new routes (`/for-clients`, `/for-pros`).
+- No new imagery or sections beyond the slim client strip.
+- No changes to forms, fields, server functions, DB schema, or the pro flow itself.
+- No nav restructure beyond the two header CTAs.
 
-- New migration: create `client_signups` + GRANTs + RLS deny-all policy
-- New `src/lib/client-signup.functions.ts` with `submitClientSignup` server fn
-- `src/components/sections/Waitlist.tsx`: add role picker state, render either existing pro flow or new `ClientForm` subcomponent
-- Update section heading/eyebrow copy to reflect "for pros and clients"
-
-### Out of scope
-
-- No auth, no client dashboard, no `/onboarding` step for clients
-- No changes to existing pro flow fields, validation, or storage uploads
+## Files touched
+- `src/components/SiteHeader.tsx` — dual CTA
+- `src/components/sections/Hero.tsx` — client sub-line
+- `src/components/sections/ForClients.tsx` *(new, small)*
+- `src/routes/index.tsx` — mount new section + meta tweak
+- `src/components/sections/Waitlist.tsx` — copy tightening + hash-based role preselect
+- `src/components/SiteFooter.tsx` — dual link

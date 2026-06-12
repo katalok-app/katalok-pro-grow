@@ -14,9 +14,14 @@ export function SiteHeader() {
           <a href="#how" className="hover:text-foreground">How it works</a>
           <a href="#levels" className="hover:text-foreground">Levels</a>
         </nav>
-        <a href="#waitlist" className="btn-primary !px-5 !py-2.5 text-xs">
-          Join Waitlist
-        </a>
+        <div className="flex items-center gap-2">
+          <a href="#waitlist-client" className="btn-ghost hidden !px-4 !py-2.5 text-xs sm:inline-flex">
+            Find a Pro
+          </a>
+          <a href="#waitlist-pro" className="btn-primary !px-5 !py-2.5 text-xs">
+            Join as Pro
+          </a>
+        </div>
       </div>
     </header>
   );

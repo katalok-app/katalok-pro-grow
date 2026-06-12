@@ -30,11 +30,17 @@ export function Hero() {
             structured bookings.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a href="#waitlist" className="btn-primary">
+            <a href="#waitlist-pro" className="btn-primary">
               Join the Waitlist <ArrowRight className="h-4 w-4" />
             </a>
             <a href="#offer" className="btn-ghost">See how it works</a>
           </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Looking for a stylist instead?{" "}
+            <a href="#waitlist-client" className="font-medium text-foreground underline underline-offset-4 hover:text-primary">
+              Join as a client →
+            </a>
+          </p>
           <div className="mt-10 flex items-center gap-4 text-xs text-muted-foreground">
             <div className="flex -space-x-2">
               {[hair, lashes, barber].map((src, i) => (

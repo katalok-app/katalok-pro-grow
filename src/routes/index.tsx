@@ -8,6 +8,7 @@ import { Categories } from "@/components/sections/Categories";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { Levels } from "@/components/sections/Levels";
 import { Waitlist } from "@/components/sections/Waitlist";
+import { ForClients } from "@/components/sections/ForClients";
 import { Vision } from "@/components/sections/Vision";
 
 export const Route = createFileRoute("/")({
@@ -17,13 +18,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Katalok helps African beauty professionals — hairstylists, nail techs, makeup artists & barbers — showcase their work and receive structured bookings. Join the waitlist.",
+          "Katalok helps African beauty pros get discovered and booked — and helps clients find trusted hairstylists, nail techs, makeup artists & barbers nearby. Join the waitlist.",
       },
-      { property: "og:title", content: "Katalok — for beauty professionals" },
+      { property: "og:title", content: "Katalok — for pros and clients" },
       {
         property: "og:description",
         content:
-          "The discovery & booking platform built for African beauty professionals. Starting in Cameroon.",
+          "The discovery & booking platform for African beauty pros and the clients who book them. Starting in Cameroon.",
       },
       { property: "og:type", content: "website" },
     ],
@@ -42,6 +43,7 @@ function Landing() {
         <Categories />
         <HowItWorks />
         <Levels />
+        <ForClients />
         <Waitlist />
         <Vision />
       </main>

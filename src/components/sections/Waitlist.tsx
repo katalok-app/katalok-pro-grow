@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { CheckCircle2, Loader2, Plus, Trash2, Upload, ChevronLeft, ChevronRight, Sparkles, Scissors, ArrowLeft } from "lucide-react";
@@ -12,22 +12,34 @@ type Role = "pro" | "client";
 export function Waitlist() {
   const [role, setRole] = useState<Role | null>(null);
 
+  useEffect(() => {
+    const apply = () => {
+      const h = window.location.hash;
+      if (h === "#waitlist-pro") setRole("pro");
+      else if (h === "#waitlist-client") setRole("client");
+    };
+    apply();
+    window.addEventListener("hashchange", apply);
+    return () => window.removeEventListener("hashchange", apply);
+  }, []);
+
   if (role === null) {
     return (
       <section id="waitlist" className="container-page py-20 md:py-28">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="eyebrow">Early access</span>
+          <span className="eyebrow">Join the waitlist — for pros and clients</span>
           <h2 className="mt-4 text-3xl sm:text-4xl md:text-5xl">
             Join the <span className="italic text-mocha">Katalok waitlist</span>
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Tell us a bit about you so we can get you set up at launch.
+            Pick the option that fits you — we'll set you up at launch.
           </p>
         </div>
 
         <div className="mx-auto mt-10 grid max-w-3xl gap-4 sm:grid-cols-2">
           <button
             type="button"
+            id="waitlist-pro"
             onClick={() => setRole("pro")}
             className="card-soft group flex flex-col items-start gap-3 p-6 text-left transition hover:border-primary hover:shadow-md"
           >
@@ -36,7 +48,7 @@ export function Waitlist() {
             </span>
             <h3 className="text-lg">I'm a beauty professional</h3>
             <p className="text-sm text-muted-foreground">
-              Showcase your work, get bookings, and grow your business.
+              List your services and get booked by serious clients.
             </p>
             <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
               Start pro signup <ChevronRight className="h-3.5 w-3.5" />
@@ -45,6 +57,7 @@ export function Waitlist() {
 
           <button
             type="button"
+            id="waitlist-client"
             onClick={() => setRole("client")}
             className="card-soft group flex flex-col items-start gap-3 p-6 text-left transition hover:border-primary hover:shadow-md"
           >
@@ -53,7 +66,7 @@ export function Waitlist() {
             </span>
             <h3 className="text-lg">I'm a client</h3>
             <p className="text-sm text-muted-foreground">
-              Discover trusted beauty pros near you and book in a few taps.
+              Find and book trusted beauty pros near you.
             </p>
             <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
               Join client waitlist <ChevronRight className="h-3.5 w-3.5" />
@@ -69,7 +82,12 @@ export function Waitlist() {
       <div className="container-page pt-10">
         <button
           type="button"
-          onClick={() => setRole(null)}
+          onClick={() => {
+            setRole(null);
+            if (typeof window !== "undefined" && window.location.hash) {
+              history.replaceState(null, "", window.location.pathname + window.location.search);
+            }
+          }}
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Change

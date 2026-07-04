@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { CheckCircle2, Loader2, Plus, Trash2, Upload, ChevronLeft, ChevronRight, Sparkles, Scissors, ArrowLeft } from "lucide-react";
-import { submitWaitlistApplication } from "@/lib/waitlist.functions";
+import { CheckCircle2, Loader2, ChevronRight, Sparkles, Scissors, ArrowLeft } from "lucide-react";
 import { submitClientSignup } from "@/lib/client-signup.functions";
-import { uploadPortfolioImage } from "@/lib/storage.functions";
-import { CATEGORIES } from "@/lib/categories";
+import { registerPro } from "@/lib/katalok-api";
 
 type Role = "pro" | "client";
+
 
 export function Waitlist() {
   const [role, setRole] = useState<Role | null>(null);

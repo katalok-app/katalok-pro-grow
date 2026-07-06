@@ -1,62 +1,86 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { CheckCircle2, Loader2, Plus, Trash2, ArrowLeft, LogOut } from "lucide-react";
+import { CheckCircle2, ImagePlus, Loader2, Plus, Trash2, ArrowLeft } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import {
-  clearSession,
-  createService,
-  deleteService,
-  getMyProfile,
-  getStoredToken,
-  getStoredUser,
-  updateMyProfile,
-  type KatalokService,
-  type ProfessionalProfile,
-} from "@/lib/katalok-api";
+import { CATEGORIES } from "@/lib/categories";
+import { createPortfolioPost, deletePortfolioPost, getOnboardingData, saveProProfile } from "@/lib/onboarding.functions";
+import { uploadPortfolioImage } from "@/lib/storage.functions";
+
+async function fileToBase64(file: File): Promise<string> {
+  const buf = await file.arrayBuffer();
+  let binary = "";
+  const bytes = new Uint8Array(buf);
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
+  }
+  return btoa(binary);
+}
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "Your Katalok Pro Dashboard — Onboarding" },
-      { name: "description", content: "Complete your Katalok pro profile and create your services." },
+      { title: "Your Katalok Profile — Prelaunch Onboarding" },
+      { name: "description", content: "Build your prelaunch Katalok profile and upload your portfolio." },
     ],
   }),
   component: OnboardingPage,
 });
 
-type Tab = "profile" | "services";
+type ProfileRow = {
+  id: string;
+  signup_id: string;
+  name: string;
+  profession: string;
+  city: string;
+  phone: string;
+  social_link: string | null;
+  bio: string | null;
+  status: string;
+};
+
+type PortfolioRow = {
+  id: string;
+  service_title: string;
+  price: number | null;
+  duration_minutes: number | null;
+  category: string | null;
+  description: string | null;
+  image_urls: string[];
+  status: string;
+};
 
 function OnboardingPage() {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<ProfessionalProfile | null>(null);
+  const loadOnboardingData = useServerFn(getOnboardingData);
+  const [signupId, setSignupId] = useState<string | null>(null);
+  const [profile, setProfile] = useState<ProfileRow | null>(null);
+  const [posts, setPosts] = useState<PortfolioRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>("profile");
 
   useEffect(() => {
-    const token = getStoredToken();
-    if (!token) {
+    const id = localStorage.getItem("katalok.signup_id");
+    if (!id) {
       navigate({ to: "/" });
       return;
     }
+    setSignupId(id);
     (async () => {
       try {
-        const p = await getMyProfile();
-        setProfile(p);
-      } catch (err: any) {
-        setError(err?.message ?? "Could not load your profile");
+        const data = await loadOnboardingData({ data: { signup_id: id } });
+        setProfile(data.profile as ProfileRow | null);
+        setPosts((data.posts as PortfolioRow[]) ?? []);
+      } catch (err) {
+        console.error(err);
+        navigate({ to: "/" });
       } finally {
         setLoading(false);
       }
     })();
-  }, [navigate]);
-
-  function onLogout() {
-    clearSession();
-    navigate({ to: "/" });
-  }
+  }, [loadOnboardingData, navigate]);
 
   if (loading) {
     return (
@@ -66,8 +90,6 @@ function OnboardingPage() {
     );
   }
 
-  const user = getStoredUser();
-
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
@@ -75,54 +97,30 @@ function OnboardingPage() {
         <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to homepage
         </Link>
-
         <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <span className="eyebrow">Welcome{user ? `, ${user.name.split(" ")[0]}` : ""}</span>
+            <span className="eyebrow">Step 2 of 2</span>
             <h1 className="mt-3 text-3xl sm:text-4xl md:text-5xl">
-              Your <span className="italic text-mocha">pro dashboard</span>
+              Build your <span className="italic text-mocha">prelaunch profile</span>
             </h1>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Set up your public profile and create the services clients can book.
+              Seed your profile + portfolio now so the marketplace is ready to feature you on day one.
             </p>
           </div>
-          <button
-            onClick={onLogout}
-            className="inline-flex items-center gap-1.5 rounded-full border border-input bg-background px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <LogOut className="h-3.5 w-3.5" /> Sign out
-          </button>
+          {profile && (
+            <span className="inline-flex items-center gap-2 rounded-full bg-accent/15 px-3 py-1.5 text-xs font-medium text-cocoa">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" /> {profile.status === "approved" ? "Approved" : "Pending approval"}
+            </span>
+          )}
         </div>
 
-        {error && (
-          <div className="mt-6 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-            {error}
+        <div className="mt-10 grid gap-8 lg:grid-cols-5">
+          <div className="lg:col-span-2">
+            <ProfileForm signupId={signupId!} profile={profile} onSaved={setProfile} />
           </div>
-        )}
-
-        <div className="mt-8 flex gap-2 border-b border-border">
-          {(["profile", "services"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-4 py-2.5 text-sm capitalize transition ${
-                tab === t
-                  ? "border-b-2 border-primary text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-8">
-          {tab === "profile" && profile && (
-            <ProfileTab profile={profile} onSaved={setProfile} />
-          )}
-          {tab === "services" && profile && (
-            <ServicesTab profile={profile} />
-          )}
+          <div className="lg:col-span-3">
+            <PortfolioSection profile={profile} posts={posts} onChange={setPosts} />
+          </div>
         </div>
       </main>
       <SiteFooter />
@@ -130,23 +128,26 @@ function OnboardingPage() {
   );
 }
 
-/* ---------------- Profile Tab ---------------- */
-
 const profileSchema = z.object({
+  name: z.string().trim().min(2).max(100),
+  profession: z.string().trim().min(2).max(60),
+  city: z.string().trim().min(2).max(80),
+  phone: z.string().trim().min(6).max(30),
+  social_link: z.string().trim().max(255).optional().or(z.literal("")),
   bio: z.string().trim().max(800).optional().or(z.literal("")),
-  location: z.string().trim().max(120).optional().or(z.literal("")),
 });
 
-function ProfileTab({
-  profile,
-  onSaved,
-}: {
-  profile: ProfessionalProfile;
-  onSaved: (p: ProfessionalProfile) => void;
-}) {
+function ProfileForm({
+  signupId, profile, onSaved,
+}: { signupId: string; profile: ProfileRow | null; onSaved: (p: ProfileRow) => void }) {
+  const saveProfile = useServerFn(saveProProfile);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  const cached = (() => {
+    try { return JSON.parse(localStorage.getItem("katalok.signup_data") ?? "{}"); } catch { return {}; }
+  })();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -155,14 +156,26 @@ function ProfileTab({
     try {
       const form = new FormData(e.currentTarget);
       const parsed = profileSchema.parse({
+        name: form.get("name"),
+        profession: form.get("profession"),
+        city: form.get("city"),
+        phone: form.get("phone"),
+        social_link: form.get("social_link"),
         bio: form.get("bio"),
-        location: form.get("location"),
       });
-      const updated = await updateMyProfile({
-        bio: parsed.bio || null,
-        location: parsed.location || null,
+      const data = await saveProfile({
+        data: {
+          profile_id: profile?.id ?? null,
+          signup_id: signupId,
+          name: parsed.name,
+          profession: parsed.profession,
+          city: parsed.city,
+          phone: parsed.phone,
+          social_link: parsed.social_link || null,
+          bio: parsed.bio || null,
+        },
       });
-      onSaved(updated);
+      onSaved(data as ProfileRow);
       setSavedAt(Date.now());
     } catch (err: any) {
       setError(err?.message ?? "Could not save profile");
@@ -172,145 +185,116 @@ function ProfileTab({
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-5">
-      <form onSubmit={onSubmit} className="card-soft grid gap-4 p-6 lg:col-span-3">
-        <div>
-          <h2 className="text-xl">Public profile</h2>
-          <p className="text-sm text-muted-foreground">Shown to clients on your Katalok page.</p>
-        </div>
-
-        <Input
-          label="Location"
-          name="location"
-          defaultValue={profile.location ?? ""}
-          placeholder="Douala, Bonamoussadi"
+    <form onSubmit={onSubmit} className="card-soft sticky top-20 grid gap-4 p-6">
+      <div>
+        <h2 className="text-xl">Your profile</h2>
+        <p className="text-sm text-muted-foreground">Visible on your future Katalok page.</p>
+      </div>
+      <Input label="Name" name="name" defaultValue={profile?.name ?? cached.name ?? ""} required />
+      <Input label="Profession" name="profession" defaultValue={profile?.profession ?? cached.profession ?? ""} required />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Input label="City" name="city" defaultValue={profile?.city ?? cached.city ?? ""} required />
+        <Input label="Phone" name="phone" type="tel" defaultValue={profile?.phone ?? cached.phone ?? ""} required />
+      </div>
+      <Input label="Social link" name="social_link" defaultValue={profile?.social_link ?? cached.social_link ?? ""} placeholder="instagram.com/handle" />
+      <div>
+        <Label>Bio</Label>
+        <textarea
+          name="bio"
+          defaultValue={profile?.bio ?? ""}
+          rows={4}
+          maxLength={800}
+          placeholder="A few words on your craft, specialties, what makes you different…"
+          className="mt-1.5 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
         />
-
-        <div>
-          <Label>Bio</Label>
-          <textarea
-            name="bio"
-            defaultValue={profile.bio ?? ""}
-            rows={5}
-            maxLength={800}
-            placeholder="A few words on your craft, specialties, what makes you different…"
-            className="mt-1.5 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-
-        {error && <p className="text-sm text-destructive">{error}</p>}
-
-        <button type="submit" disabled={saving} className="btn-primary w-full">
-          {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</> : "Save profile"}
-        </button>
-        {savedAt && (
-          <p className="inline-flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-            <CheckCircle2 className="h-3.5 w-3.5 text-accent" /> Saved
-          </p>
-        )}
-      </form>
-
-      <aside className="card-soft grid gap-3 p-6 lg:col-span-2">
-        <h3 className="text-lg">Account</h3>
-        <Row label="Name" value={profile.user.name} />
-        <Row label="Email" value={profile.user.email} />
-        <Row label="Role" value={profile.user.role} />
-        <Row label="Status" value={profile.isActive ? "Active" : "Inactive"} />
-      </aside>
-    </div>
+      </div>
+      {error && <p className="text-sm text-destructive">{error}</p>}
+      <button type="submit" disabled={saving} className="btn-primary w-full">
+        {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</> : profile ? "Update profile" : "Create profile"}
+      </button>
+      {savedAt && (
+        <p className="inline-flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <CheckCircle2 className="h-3.5 w-3.5 text-accent" /> Saved
+        </p>
+      )}
+    </form>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-2 text-sm last:border-b-0">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium text-foreground">{value}</span>
-    </div>
-  );
-}
-
-/* ---------------- Services Tab ---------------- */
-
-const serviceSchema = z.object({
-  title: z.string().trim().min(2, "Title is required").max(120),
-  description: z.string().trim().min(2, "Description is required").max(800),
-  price: z.coerce.number().min(0, "Price must be 0 or more").max(10_000_000),
-  duration: z.coerce.number().int().min(1).max(1440).optional(),
-  category: z.string().trim().max(60).optional().or(z.literal("")),
-});
-
-function ServicesTab({ profile }: { profile: ProfessionalProfile }) {
-  const [services, setServices] = useState<KatalokService[]>(profile.services ?? []);
+function PortfolioSection({
+  profile, posts, onChange,
+}: { profile: ProfileRow | null; posts: PortfolioRow[]; onChange: (p: PortfolioRow[]) => void }) {
+  const removePortfolioPost = useServerFn(deletePortfolioPost);
   const [adding, setAdding] = useState(false);
 
-  async function onDelete(id: string) {
-    if (!confirm("Delete this service?")) return;
-    try {
-      await deleteService(id);
-      setServices((prev) => prev.filter((s) => s.id !== id));
-    } catch (err: any) {
-      alert(err?.message ?? "Could not delete service");
-    }
+  if (!profile) {
+    return (
+      <div className="card-soft p-10 text-center">
+        <ImagePlus className="mx-auto h-10 w-10 text-muted-foreground" />
+        <h3 className="mt-4 text-xl">Portfolio</h3>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Create your profile first to start uploading portfolio posts.
+        </p>
+      </div>
+    );
+  }
+
+  async function deletePost(id: string) {
+    await removePortfolioPost({ data: { id, profile_id: profile!.id } });
+    onChange(posts.filter((p) => p.id !== id));
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl">Your services</h2>
-          <p className="text-sm text-muted-foreground">
-            Services are saved directly to the Katalok platform.
-          </p>
+          <h2 className="text-xl">Portfolio</h2>
+          <p className="text-sm text-muted-foreground">Each post will be reviewed before going live.</p>
         </div>
-        {!adding && (
-          <button onClick={() => setAdding(true)} className="btn-primary !px-4 !py-2.5 text-xs">
-            <Plus className="h-4 w-4" /> Add service
-          </button>
-        )}
+        <button onClick={() => setAdding(true)} className="btn-primary !px-4 !py-2.5 text-xs">
+          <Plus className="h-4 w-4" /> Add post
+        </button>
       </div>
 
       {adding && (
-        <ServiceForm
+        <PortfolioForm
+          profileId={profile.id}
           onCancel={() => setAdding(false)}
-          onCreated={(s) => {
-            setServices((prev) => [s, ...prev]);
-            setAdding(false);
-          }}
+          onCreated={(p) => { onChange([p, ...posts]); setAdding(false); }}
         />
       )}
 
-      {services.length === 0 && !adding ? (
+      {posts.length === 0 && !adding ? (
         <div className="card-soft p-10 text-center">
-          <p className="text-sm text-muted-foreground">
-            No services yet. Add your first service so clients can book you.
-          </p>
+          <ImagePlus className="mx-auto h-10 w-10 text-muted-foreground" />
+          <p className="mt-3 text-sm text-muted-foreground">No portfolio posts yet. Add your best work to get featured.</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
-          {services.map((s) => (
-            <article key={s.id} className="card-soft p-5">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <h3 className="text-base">{s.title}</h3>
-                  {s.category && (
-                    <p className="text-xs text-muted-foreground">{s.category}</p>
-                  )}
-                </div>
-                <button
-                  onClick={() => onDelete(s.id)}
-                  aria-label="Delete service"
-                  className="text-muted-foreground hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-              {s.description && (
-                <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{s.description}</p>
+          {posts.map((p) => (
+            <article key={p.id} className="card-soft overflow-hidden">
+              {p.image_urls[0] ? (
+                <img src={p.image_urls[0]} alt={p.service_title} className="aspect-[4/3] w-full object-cover" loading="lazy" />
+              ) : (
+                <div className="aspect-[4/3] bg-secondary" />
               )}
-              <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">{s.price.toLocaleString()} XAF</span>
-                <span>{s.duration ? `${s.duration} min` : ""}</span>
+              <div className="p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="text-base">{p.service_title}</h3>
+                    {p.category && <p className="text-xs text-muted-foreground">{p.category}</p>}
+                  </div>
+                  <button onClick={() => deletePost(p.id)} aria-label="Delete" className="text-muted-foreground hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{p.price ? `${p.price.toLocaleString()} XAF` : "—"}</span>
+                  <span>{p.duration_minutes ? `${p.duration_minutes} min` : "—"}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wider ${p.status === "approved" ? "bg-accent/20 text-cocoa" : "bg-secondary text-muted-foreground"}`}>
+                    {p.status}
+                  </span>
+                </div>
               </div>
             </article>
           ))}
@@ -320,13 +304,20 @@ function ServicesTab({ profile }: { profile: ProfessionalProfile }) {
   );
 }
 
-function ServiceForm({
-  onCreated,
-  onCancel,
-}: {
-  onCreated: (s: KatalokService) => void;
-  onCancel: () => void;
-}) {
+const postSchema = z.object({
+  service_title: z.string().trim().min(2).max(120),
+  price: z.coerce.number().min(0).max(10_000_000).optional(),
+  duration_minutes: z.coerce.number().int().min(1).max(1440).optional(),
+  category: z.string().trim().max(60).optional().or(z.literal("")),
+  description: z.string().trim().max(800).optional().or(z.literal("")),
+});
+
+function PortfolioForm({
+  profileId, onCreated, onCancel,
+}: { profileId: string; onCreated: (p: PortfolioRow) => void; onCancel: () => void }) {
+  const submitPortfolioPost = useServerFn(createPortfolioPost);
+  const uploadImage = useServerFn(uploadPortfolioImage);
+  const [files, setFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -336,23 +327,42 @@ function ServiceForm({
     setSaving(true);
     try {
       const form = new FormData(e.currentTarget);
-      const parsed = serviceSchema.parse({
-        title: form.get("title"),
-        description: form.get("description"),
-        price: form.get("price"),
-        duration: form.get("duration") || undefined,
+      const parsed = postSchema.parse({
+        service_title: form.get("service_title"),
+        price: form.get("price") || undefined,
+        duration_minutes: form.get("duration_minutes") || undefined,
         category: form.get("category"),
+        description: form.get("description"),
       });
-      const created = await createService({
-        title: parsed.title,
-        description: parsed.description,
-        price: parsed.price,
-        duration: parsed.duration ?? null,
-        category: parsed.category || null,
+      const image_urls: string[] = [];
+      for (const f of files.slice(0, 6)) {
+        if (f.size > 5 * 1024 * 1024) throw new Error(`${f.name} is larger than 5MB`);
+        const data_base64 = await fileToBase64(f);
+        const res = await uploadImage({
+          data: {
+            filename: f.name,
+            content_type: f.type || "image/jpeg",
+            data_base64,
+            folder: "onboarding",
+            profile_id: profileId,
+          },
+        });
+        image_urls.push(res.url);
+      }
+      const data = await submitPortfolioPost({
+        data: {
+          profile_id: profileId,
+          service_title: parsed.service_title,
+          price: parsed.price ?? null,
+          duration_minutes: parsed.duration_minutes ?? null,
+          category: parsed.category || null,
+          description: parsed.description || null,
+          image_urls,
+        },
       });
-      onCreated(created);
+      onCreated(data as PortfolioRow);
     } catch (err: any) {
-      setError(err?.message ?? "Could not create service");
+      setError(err?.message ?? "Could not save post");
     } finally {
       setSaving(false);
     }
@@ -361,46 +371,51 @@ function ServiceForm({
   return (
     <form onSubmit={onSubmit} className="card-soft grid gap-4 p-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg">New service</h3>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="text-xs text-muted-foreground hover:text-foreground"
-        >
-          Cancel
-        </button>
+        <h3 className="text-lg">New portfolio post</h3>
+        <button type="button" onClick={onCancel} className="text-xs text-muted-foreground hover:text-foreground">Cancel</button>
       </div>
-
-      <Input label="Title" name="title" placeholder="Knotless braids — medium" required />
 
       <div>
-        <Label>Description</Label>
-        <textarea
-          name="description"
-          rows={3}
-          maxLength={800}
-          required
-          placeholder="What's included, how long it takes, what to expect…"
-          className="mt-1.5 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
-        />
+        <Label>Images (up to 6)</Label>
+        <label className="mt-1.5 flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-input bg-background px-3 py-8 text-sm text-muted-foreground hover:bg-secondary">
+          <ImagePlus className="h-4 w-4" />
+          {files.length > 0 ? `${files.length} image(s) selected` : "Tap to upload images"}
+          <input type="file" accept="image/*" multiple className="hidden"
+            onChange={(e) => setFiles(Array.from(e.target.files ?? []).slice(0, 6))} />
+        </label>
       </div>
 
+      <Input label="Service title" name="service_title" placeholder="Knotless braids — medium" required />
       <div className="grid gap-3 sm:grid-cols-3">
-        <Input label="Price (XAF)" name="price" type="number" min={0} placeholder="25000" required />
-        <Input label="Duration (min)" name="duration" type="number" min={1} placeholder="180" />
-        <Input label="Category" name="category" placeholder="Braids" />
+        <Input label="Price (XAF)" name="price" type="number" min={0} placeholder="25000" />
+        <Input label="Duration (min)" name="duration_minutes" type="number" min={1} placeholder="180" />
+        <div>
+          <Label>Category</Label>
+          <input
+            name="category"
+            list="portfolio-categories"
+            placeholder="Braids"
+            className="mt-1.5 h-11 w-full rounded-xl border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+          <datalist id="portfolio-categories">
+            {CATEGORIES.map((c) => <option key={c} value={c} />)}
+          </datalist>
+        </div>
+      </div>
+      <div>
+        <Label>Description (optional)</Label>
+        <textarea name="description" rows={3} maxLength={800}
+          className="mt-1.5 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring" />
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <button type="submit" disabled={saving} className="btn-primary w-full">
-        {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</> : "Create service"}
+        {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</> : "Submit post"}
       </button>
     </form>
   );
 }
-
-/* ---------------- Small UI helpers ---------------- */
 
 function Label({ children }: { children: React.ReactNode }) {
   return <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{children}</span>;
@@ -408,18 +423,10 @@ function Label({ children }: { children: React.ReactNode }) {
 
 function Input({
   label, name, type = "text", placeholder, required, defaultValue, min,
-}: {
-  label: string;
-  name: string;
-  type?: string;
-  placeholder?: string;
-  required?: boolean;
-  defaultValue?: string | number;
-  min?: number;
-}) {
+}: { label: string; name: string; type?: string; placeholder?: string; required?: boolean; defaultValue?: string | number; min?: number }) {
   return (
     <div>
-      <Label>{label}{required && <span className="ml-0.5 text-destructive">*</span>}</Label>
+      <Label>{label}</Label>
       <input
         name={name}
         type={type}

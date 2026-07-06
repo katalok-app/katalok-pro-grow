@@ -300,21 +300,16 @@ function ProWaitlist() {
   function next() {
     setError(null);
     if (step === 1) {
-      const r = stepOneSchema.safeParse({
-        full_name: fullName,
-        phone,
-        work_location: workLocation,
-        years_experience: years || undefined,
-        social_link: social,
-      });
+      const r = stepOneSchema.safeParse({ full_name: fullName, phone, password });
       if (!r.success) return setError(r.error.errors[0].message);
     }
     if (step === 2) {
-      const r = stepTwoSchema.safeParse({ business_name: businessName, city, quarter });
+      const r = stepTwoSchema.safeParse({ business_name: businessName, about, city, quarter });
       if (!r.success) return setError(r.error.errors[0].message);
     }
     setStep((s) => s + 1);
   }
+
 
   async function onSubmit() {
     setError(null);

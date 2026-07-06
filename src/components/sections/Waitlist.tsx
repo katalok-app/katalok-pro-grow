@@ -250,16 +250,16 @@ function ProWaitlist() {
   const [success, setSuccess] = useState(false);
 
   // Step 1
-  const [workLocation, setWorkLocation] = useState<WorkLocation | "">("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [years, setYears] = useState("");
-  const [social, setSocial] = useState("");
+  const [password, setPassword] = useState("");
 
   // Step 2
   const [businessName, setBusinessName] = useState("");
+  const [about, setAbout] = useState("");
   const [city, setCity] = useState("");
   const [quarter, setQuarter] = useState("");
+
 
   // Step 3
   const [services, setServices] = useState<string[]>([]);

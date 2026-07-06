@@ -203,12 +203,6 @@ async function fileToBase64(file: File): Promise<string> {
   return btoa(binary);
 }
 
-const WORK_LOCATIONS = [
-  { value: "home", label: "I work from home" },
-  { value: "salon", label: "I work from a salon" },
-] as const;
-type WorkLocation = typeof WORK_LOCATIONS[number]["value"];
-
 type DraftPost = {
   id: string;
   service_title: string;
@@ -223,17 +217,17 @@ type PostsByCategory = Record<string, DraftPost[]>;
 
 const stepOneSchema = z.object({
   full_name: z.string().trim().min(2, "Enter your full name").max(100),
-  phone: z.string().trim().min(6, "Enter a valid phone").max(30),
-  work_location: z.enum(["home", "salon"], { errorMap: () => ({ message: "Select where you work" }) }),
-  years_experience: z.coerce.number().int().min(0).max(80).optional(),
-  social_link: z.string().trim().max(255).optional().or(z.literal("")),
+  phone: z.string().trim().min(6, "Enter your WhatsApp number").max(30),
+  password: z.string().min(8, "Password must be at least 8 characters").max(128),
 });
 
 const stepTwoSchema = z.object({
   business_name: z.string().trim().min(2, "Business name required").max(120),
-  city: z.string().trim().min(2, "City required").max(80),
+  about: z.string().trim().min(2, "Tell us about your work").max(800),
+  city: z.string().trim().min(2, "Town required").max(80),
   quarter: z.string().trim().min(2, "Quarter / neighborhood required").max(80),
 });
+
 
 function newDraft(): DraftPost {
   return {
@@ -256,16 +250,16 @@ function ProWaitlist() {
   const [success, setSuccess] = useState(false);
 
   // Step 1
-  const [workLocation, setWorkLocation] = useState<WorkLocation | "">("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [years, setYears] = useState("");
-  const [social, setSocial] = useState("");
+  const [password, setPassword] = useState("");
 
   // Step 2
   const [businessName, setBusinessName] = useState("");
+  const [about, setAbout] = useState("");
   const [city, setCity] = useState("");
   const [quarter, setQuarter] = useState("");
+
 
   // Step 3
   const [services, setServices] = useState<string[]>([]);
@@ -306,21 +300,16 @@ function ProWaitlist() {
   function next() {
     setError(null);
     if (step === 1) {
-      const r = stepOneSchema.safeParse({
-        full_name: fullName,
-        phone,
-        work_location: workLocation,
-        years_experience: years || undefined,
-        social_link: social,
-      });
+      const r = stepOneSchema.safeParse({ full_name: fullName, phone, password });
       if (!r.success) return setError(r.error.errors[0].message);
     }
     if (step === 2) {
-      const r = stepTwoSchema.safeParse({ business_name: businessName, city, quarter });
+      const r = stepTwoSchema.safeParse({ business_name: businessName, about, city, quarter });
       if (!r.success) return setError(r.error.errors[0].message);
     }
     setStep((s) => s + 1);
   }
+
 
   async function onSubmit() {
     setError(null);
@@ -389,17 +378,17 @@ function ProWaitlist() {
         data: {
           full_name: fullName.trim(),
           phone: phone.trim(),
+          password,
           city: city.trim(),
           quarter: quarter.trim(),
           business_name: businessName.trim(),
-          work_location: workLocation as WorkLocation,
-          social_link: social.trim(),
-          years_experience: years ? Number(years) : null,
+          about: about.trim(),
           services,
           posts: uploadedPosts,
           consent: true,
         },
       });
+
 
       localStorage.setItem("katalok.signup_id", result.signup_id);
       setSuccess(true);
@@ -445,39 +434,33 @@ function ProWaitlist() {
           <div className="card-soft mt-6 grid gap-5 p-6 sm:p-8">
             {step === 1 && (
               <>
-                <h3 className="text-lg">About you</h3>
+                <h3 className="text-lg">Account</h3>
                 <Input label="Full name" value={fullName} onChange={setFullName} placeholder="Your full name" required />
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Input label="Phone number" value={phone} onChange={setPhone} type="tel" placeholder="+237 ..." required />
-                  <Input label="Years of experience" value={years} onChange={setYears} type="number" min={0} placeholder="3" />
-                </div>
-                <div>
-                  <Label>Where do you work?</Label>
-                  <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
-                    {WORK_LOCATIONS.map((opt) => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        aria-pressed={workLocation === opt.value}
-                        onClick={() => setWorkLocation(opt.value)}
-                        className="flex min-h-11 items-center gap-2 rounded-xl border border-input bg-background px-3 text-left text-sm transition hover:bg-secondary aria-pressed:border-primary aria-pressed:bg-primary/10"
-                      >
-                        <span className={`h-4 w-4 rounded-full border ${workLocation === opt.value ? "border-primary bg-primary shadow-[inset_0_0_0_4px_var(--background)]" : "border-input"}`} />
-                        <span>{opt.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <Input label="Social media link (any platform)" value={social} onChange={setSocial} placeholder="Instagram, TikTok, Facebook… paste any profile link" />
+                <Input label="WhatsApp number" value={phone} onChange={setPhone} type="tel" placeholder="+237 ..." required />
+                <Input label="Password" value={password} onChange={setPassword} type="password" placeholder="At least 8 characters" required />
+                <p className="text-xs text-muted-foreground">
+                  You'll use your WhatsApp number and this password to sign in at launch.
+                </p>
               </>
             )}
 
             {step === 2 && (
               <>
-                <h3 className="text-lg">Your business</h3>
+                <h3 className="text-lg">Professional profile</h3>
                 <Input label="Business name" value={businessName} onChange={setBusinessName} placeholder="e.g. Glow by Ada" required />
+                <div>
+                  <Label>About your work<span className="ml-0.5 text-destructive">*</span></Label>
+                  <textarea
+                    value={about}
+                    onChange={(e) => setAbout(e.target.value)}
+                    rows={4}
+                    maxLength={800}
+                    placeholder="Tell clients about your craft, specialties, and what makes you different…"
+                    className="mt-1.5 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Input label="City" value={city} onChange={setCity} placeholder="Douala, Yaoundé…" required />
+                  <Input label="Town" value={city} onChange={setCity} placeholder="Douala, Yaoundé…" required />
                   <Input label="Quarter / neighborhood" value={quarter} onChange={setQuarter} placeholder="Bonamoussadi, Bastos…" required />
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -485,6 +468,7 @@ function ProWaitlist() {
                 </p>
               </>
             )}
+
 
             {step === 3 && (
               <>
@@ -652,7 +636,7 @@ function ProWaitlist() {
 }
 
 function Stepper({ step }: { step: number }) {
-  const labels = ["About you", "Your business", "Services"];
+  const labels = ["Account", "Profile", "Services"];
   return (
     <div className="flex items-center justify-center gap-2">
       {labels.map((l, i) => {

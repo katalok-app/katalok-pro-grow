@@ -378,17 +378,17 @@ function ProWaitlist() {
         data: {
           full_name: fullName.trim(),
           phone: phone.trim(),
+          password,
           city: city.trim(),
           quarter: quarter.trim(),
           business_name: businessName.trim(),
-          work_location: workLocation as WorkLocation,
-          social_link: social.trim(),
-          years_experience: years ? Number(years) : null,
+          about: about.trim(),
           services,
           posts: uploadedPosts,
           consent: true,
         },
       });
+
 
       localStorage.setItem("katalok.signup_id", result.signup_id);
       setSuccess(true);

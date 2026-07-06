@@ -434,39 +434,33 @@ function ProWaitlist() {
           <div className="card-soft mt-6 grid gap-5 p-6 sm:p-8">
             {step === 1 && (
               <>
-                <h3 className="text-lg">About you</h3>
+                <h3 className="text-lg">Account</h3>
                 <Input label="Full name" value={fullName} onChange={setFullName} placeholder="Your full name" required />
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Input label="Phone number" value={phone} onChange={setPhone} type="tel" placeholder="+237 ..." required />
-                  <Input label="Years of experience" value={years} onChange={setYears} type="number" min={0} placeholder="3" />
-                </div>
-                <div>
-                  <Label>Where do you work?</Label>
-                  <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
-                    {WORK_LOCATIONS.map((opt) => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        aria-pressed={workLocation === opt.value}
-                        onClick={() => setWorkLocation(opt.value)}
-                        className="flex min-h-11 items-center gap-2 rounded-xl border border-input bg-background px-3 text-left text-sm transition hover:bg-secondary aria-pressed:border-primary aria-pressed:bg-primary/10"
-                      >
-                        <span className={`h-4 w-4 rounded-full border ${workLocation === opt.value ? "border-primary bg-primary shadow-[inset_0_0_0_4px_var(--background)]" : "border-input"}`} />
-                        <span>{opt.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <Input label="Social media link (any platform)" value={social} onChange={setSocial} placeholder="Instagram, TikTok, Facebook… paste any profile link" />
+                <Input label="WhatsApp number" value={phone} onChange={setPhone} type="tel" placeholder="+237 ..." required />
+                <Input label="Password" value={password} onChange={setPassword} type="password" placeholder="At least 8 characters" required />
+                <p className="text-xs text-muted-foreground">
+                  You'll use your WhatsApp number and this password to sign in at launch.
+                </p>
               </>
             )}
 
             {step === 2 && (
               <>
-                <h3 className="text-lg">Your business</h3>
+                <h3 className="text-lg">Professional profile</h3>
                 <Input label="Business name" value={businessName} onChange={setBusinessName} placeholder="e.g. Glow by Ada" required />
+                <div>
+                  <Label>About your work<span className="ml-0.5 text-destructive">*</span></Label>
+                  <textarea
+                    value={about}
+                    onChange={(e) => setAbout(e.target.value)}
+                    rows={4}
+                    maxLength={800}
+                    placeholder="Tell clients about your craft, specialties, and what makes you different…"
+                    className="mt-1.5 w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <Input label="City" value={city} onChange={setCity} placeholder="Douala, Yaoundé…" required />
+                  <Input label="Town" value={city} onChange={setCity} placeholder="Douala, Yaoundé…" required />
                   <Input label="Quarter / neighborhood" value={quarter} onChange={setQuarter} placeholder="Bonamoussadi, Bastos…" required />
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -474,6 +468,7 @@ function ProWaitlist() {
                 </p>
               </>
             )}
+
 
             {step === 3 && (
               <>

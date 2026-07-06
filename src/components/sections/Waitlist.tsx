@@ -636,7 +636,7 @@ function ProWaitlist() {
 }
 
 function Stepper({ step }: { step: number }) {
-  const labels = ["About you", "Your business", "Services"];
+  const labels = ["Account", "Profile", "Services"];
   return (
     <div className="flex items-center justify-center gap-2">
       {labels.map((l, i) => {

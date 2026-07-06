@@ -203,12 +203,6 @@ async function fileToBase64(file: File): Promise<string> {
   return btoa(binary);
 }
 
-const WORK_LOCATIONS = [
-  { value: "home", label: "I work from home" },
-  { value: "salon", label: "I work from a salon" },
-] as const;
-type WorkLocation = typeof WORK_LOCATIONS[number]["value"];
-
 type DraftPost = {
   id: string;
   service_title: string;
@@ -223,17 +217,17 @@ type PostsByCategory = Record<string, DraftPost[]>;
 
 const stepOneSchema = z.object({
   full_name: z.string().trim().min(2, "Enter your full name").max(100),
-  phone: z.string().trim().min(6, "Enter a valid phone").max(30),
-  work_location: z.enum(["home", "salon"], { errorMap: () => ({ message: "Select where you work" }) }),
-  years_experience: z.coerce.number().int().min(0).max(80).optional(),
-  social_link: z.string().trim().max(255).optional().or(z.literal("")),
+  phone: z.string().trim().min(6, "Enter your WhatsApp number").max(30),
+  password: z.string().min(8, "Password must be at least 8 characters").max(128),
 });
 
 const stepTwoSchema = z.object({
   business_name: z.string().trim().min(2, "Business name required").max(120),
-  city: z.string().trim().min(2, "City required").max(80),
+  about: z.string().trim().min(2, "Tell us about your work").max(800),
+  city: z.string().trim().min(2, "Town required").max(80),
   quarter: z.string().trim().min(2, "Quarter / neighborhood required").max(80),
 });
+
 
 function newDraft(): DraftPost {
   return {

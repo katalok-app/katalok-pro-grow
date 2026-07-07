@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { z } from "zod";
 import { CheckCircle2, Loader2, Plus, Trash2, Upload, ChevronLeft, ChevronRight, Sparkles, Scissors, ArrowLeft } from "lucide-react";
-import { submitWaitlistApplication } from "@/lib/waitlist.functions";
-import { submitClientSignup } from "@/lib/client-signup.functions";
-import { uploadPortfolioImage } from "@/lib/storage.functions";
 import { CATEGORIES } from "@/lib/categories";
+import {
+  ApiError,
+  CATEGORY_LABEL_TO_ENUM,
+  createService,
+  register,
+  uploadPortfolioImage,
+  uploadServiceFeatured,
+} from "@/lib/katalok-api";
 
 type Role = "pro" | "client";
 
@@ -27,12 +30,12 @@ export function Waitlist() {
     return (
       <section id="waitlist" className="container-page py-20 md:py-28">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="eyebrow">Join the waitlist — for pros and clients</span>
+          <span className="eyebrow">Join Katalok — for pros and clients</span>
           <h2 className="mt-4 text-3xl sm:text-4xl md:text-5xl">
-            Join the <span className="italic text-mocha">Katalok waitlist</span>
+            Create your <span className="italic text-mocha">Katalok account</span>
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Pick the option that fits you — we'll set you up at launch.
+            Pick the option that fits you — we'll set you up right away.
           </p>
         </div>
 
@@ -69,7 +72,7 @@ export function Waitlist() {
               Find and book trusted beauty pros near you.
             </p>
             <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
-              Join client waitlist <ChevronRight className="h-3.5 w-3.5" />
+              Create client account <ChevronRight className="h-3.5 w-3.5" />
             </span>
           </button>
         </div>
@@ -93,42 +96,51 @@ export function Waitlist() {
           <ArrowLeft className="h-3.5 w-3.5" /> Change
         </button>
       </div>
-      {role === "pro" ? <ProWaitlist /> : <ClientWaitlist />}
+      {role === "pro" ? <ProSignup /> : <ClientSignup />}
     </div>
   );
 }
 
-function ClientWaitlist() {
-  const submit = useServerFn(submitClientSignup);
+function ErrorList({ error }: { error: ApiError | Error | null }) {
+  if (!error) return null;
+  const details = error instanceof ApiError ? error.details : [];
+  return (
+    <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+      <p className="font-medium">{error.message}</p>
+      {details.length > 0 && (
+        <ul className="mt-1 list-disc pl-5">
+          {details.map((d, i) => (
+            <li key={i}>{d.field ? `${d.field}: ${d.message}` : d.message}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function ClientSignup() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [city, setCity] = useState("");
-  const [quarter, setQuarter] = useState("");
+  const [password, setPassword] = useState("");
   const [consent, setConsent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | Error | null>(null);
   const [success, setSuccess] = useState(false);
-
-  const schema = z.object({
-    full_name: z.string().trim().min(2, "Enter your full name").max(100),
-    phone: z.string().trim().min(6, "Enter your WhatsApp number").max(30),
-    city: z.string().trim().min(2, "City required").max(80),
-    quarter: z.string().trim().min(2, "Town / quarter required").max(80),
-  });
 
   async function onSubmit() {
     setError(null);
-    if (!consent) return setError("Please accept to continue");
-    const r = schema.safeParse({ full_name: fullName, phone, city, quarter });
-    if (!r.success) return setError(r.error.errors[0].message);
+    if (!consent) return setError(new Error("Please accept to continue"));
     setLoading(true);
     try {
-      await submit({
-        data: { full_name: fullName.trim(), phone: phone.trim(), city: city.trim(), quarter: quarter.trim(), consent: true },
+      await register({
+        name: fullName.trim(),
+        phone: phone.trim(),
+        password,
+        role: "CLIENT",
       });
       setSuccess(true);
-    } catch (err: any) {
-      setError(err?.message || "Something went wrong");
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Something went wrong"));
     } finally {
       setLoading(false);
     }
@@ -139,10 +151,9 @@ function ClientWaitlist() {
       <section className="container-page py-16 md:py-24">
         <div className="card-soft mx-auto max-w-xl p-10 text-center">
           <CheckCircle2 className="mx-auto h-12 w-12 text-accent" />
-          <h2 className="mt-4 text-3xl">You're on the list 🎉</h2>
+          <h2 className="mt-4 text-3xl">Welcome to Katalok 🎉</h2>
           <p className="mt-3 text-muted-foreground">
-            Thanks {fullName.split(" ")[0]}. We'll message you on{" "}
-            <span className="font-medium text-foreground">{phone}</span> as soon as Katalok launches in your area.
+            You're signed in {fullName.split(" ")[0]}. Start exploring pros in your area.
           </p>
         </div>
       </section>
@@ -152,22 +163,19 @@ function ClientWaitlist() {
   return (
     <section className="container-page py-12 md:py-20">
       <div className="mx-auto max-w-xl text-center">
-        <span className="eyebrow">Client waitlist</span>
+        <span className="eyebrow">Client account</span>
         <h2 className="mt-4 text-3xl sm:text-4xl">
-          Get notified at <span className="italic text-mocha">launch</span>
+          Discover pros <span className="italic text-mocha">near you</span>
         </h2>
         <p className="mt-3 text-muted-foreground">
-          Just a few details so we can let you know when pros near you are bookable.
+          Create your account with your WhatsApp number and a password.
         </p>
       </div>
 
       <div className="card-soft mx-auto mt-8 grid max-w-xl gap-5 p-6 sm:p-8">
         <Input label="Full name" value={fullName} onChange={setFullName} placeholder="Your full name" required />
-        <Input label="WhatsApp number" value={phone} onChange={setPhone} type="tel" placeholder="+237 ..." required />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Input label="City" value={city} onChange={setCity} placeholder="Douala, Yaoundé…" required />
-          <Input label="Town / quarter" value={quarter} onChange={setQuarter} placeholder="Bonamoussadi, Bastos…" required />
-        </div>
+        <Input label="WhatsApp number" value={phone} onChange={setPhone} type="tel" placeholder="+237 6 ..." required />
+        <Input label="Password" value={password} onChange={setPassword} type="password" placeholder="At least 8 characters" required />
 
         <button
           type="button"
@@ -178,29 +186,18 @@ function ClientWaitlist() {
           <span className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${consent ? "border-primary bg-primary text-primary-foreground" : "border-input"}`}>
             {consent && <CheckCircle2 className="h-3 w-3" />}
           </span>
-          <span>I agree to be contacted by Katalok about early access and accept the privacy policy.</span>
+          <span>I agree to the Katalok terms and privacy policy.</span>
         </button>
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        <ErrorList error={error} />
 
         <button type="button" onClick={onSubmit} disabled={loading} className="btn-primary !px-5">
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-          {loading ? "Submitting…" : "Join client waitlist"}
+          {loading ? "Creating account…" : "Create client account"}
         </button>
       </div>
     </section>
   );
-}
-
-async function fileToBase64(file: File): Promise<string> {
-  const buf = await file.arrayBuffer();
-  let binary = "";
-  const bytes = new Uint8Array(buf);
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
-  }
-  return btoa(binary);
 }
 
 type DraftPost = {
@@ -210,24 +207,9 @@ type DraftPost = {
   duration_minutes: string;
   description: string;
   files: File[];
-  uploading?: boolean;
 };
 
 type PostsByCategory = Record<string, DraftPost[]>;
-
-const stepOneSchema = z.object({
-  full_name: z.string().trim().min(2, "Enter your full name").max(100),
-  phone: z.string().trim().min(6, "Enter your WhatsApp number").max(30),
-  password: z.string().min(8, "Password must be at least 8 characters").max(128),
-});
-
-const stepTwoSchema = z.object({
-  business_name: z.string().trim().min(2, "Business name required").max(120),
-  about: z.string().trim().min(2, "Tell us about your work").max(800),
-  city: z.string().trim().min(2, "Town required").max(80),
-  quarter: z.string().trim().min(2, "Quarter / neighborhood required").max(80),
-});
-
 
 function newDraft(): DraftPost {
   return {
@@ -240,13 +222,11 @@ function newDraft(): DraftPost {
   };
 }
 
-function ProWaitlist() {
-  const submit = useServerFn(submitWaitlistApplication);
-  const uploadImage = useServerFn(uploadPortfolioImage);
-
+function ProSignup() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<string | null>(null);
+  const [error, setError] = useState<ApiError | Error | null>(null);
   const [success, setSuccess] = useState(false);
 
   // Step 1
@@ -259,7 +239,6 @@ function ProWaitlist() {
   const [about, setAbout] = useState("");
   const [city, setCity] = useState("");
   const [quarter, setQuarter] = useState("");
-
 
   // Step 3
   const [services, setServices] = useState<string[]>([]);
@@ -300,103 +279,99 @@ function ProWaitlist() {
   function next() {
     setError(null);
     if (step === 1) {
-      const r = stepOneSchema.safeParse({ full_name: fullName, phone, password });
-      if (!r.success) return setError(r.error.errors[0].message);
+      if (fullName.trim().length < 2) return setError(new Error("Enter your full name"));
+      if (phone.trim().length < 7) return setError(new Error("Enter a valid WhatsApp number"));
+      if (password.length < 8) return setError(new Error("Password must be at least 8 characters"));
     }
     if (step === 2) {
-      const r = stepTwoSchema.safeParse({ business_name: businessName, about, city, quarter });
-      if (!r.success) return setError(r.error.errors[0].message);
+      if (businessName.trim().length < 2) return setError(new Error("Business name required"));
+      if (about.trim().length < 2) return setError(new Error("Tell us about your work"));
+      if (city.trim().length < 2) return setError(new Error("Town required"));
+      if (quarter.trim().length < 2) return setError(new Error("Quarter / neighborhood required"));
     }
     setStep((s) => s + 1);
   }
 
-
   async function onSubmit() {
     setError(null);
-
-    if (services.length === 0) return setError("Select at least one service you offer");
-    if (!consent) return setError("Please accept to continue");
-
-    // Validate each post lightly
-    for (const cat of services) {
-      for (const p of posts[cat] ?? []) {
-        if (p.service_title.trim().length > 0 && p.service_title.trim().length < 2) {
-          return setError(`A ${cat} post needs a service type of at least 2 characters`);
-        }
-      }
-    }
+    if (services.length === 0) return setError(new Error("Select at least one service you offer"));
+    if (!consent) return setError(new Error("Please accept to continue"));
 
     setLoading(true);
     try {
-      // Upload images per post
-      const uploadedPosts: {
-        category: string;
-        service_title: string;
-        price: number | null;
-        duration_minutes: number | null;
-        description: string | null;
-        image_urls: string[];
-      }[] = [];
+      // 1) Register as PROFESSIONAL (returns JWT + stores it)
+      setProgress("Creating your account…");
+      await register({
+        name: fullName.trim(),
+        phone: phone.trim(),
+        password,
+        role: "PROFESSIONAL",
+        plan: "STARTER",
+      });
 
+      // 2) Update professional profile with bio + location
+      setProgress("Saving your profile…");
+      const location = `${quarter.trim()}, ${city.trim()}`;
+      const bio = `${businessName.trim()} — ${about.trim()}`;
+      const { updateMyProfessionalProfile } = await import("@/lib/katalok-api");
+      await updateMyProfessionalProfile({ bio, location });
+
+      // 3) Create a Service for each portfolio post, uploading images
       for (const cat of services) {
+        const categoryEnum = CATEGORY_LABEL_TO_ENUM[cat];
+        if (!categoryEnum) continue;
         for (const p of posts[cat] ?? []) {
-          // Skip completely empty posts
-          if (!p.service_title.trim() && p.files.length === 0 && !p.price && !p.duration_minutes && !p.description.trim()) {
-            continue;
+          const hasContent = p.service_title.trim() || p.files.length > 0 || p.price || p.duration_minutes || p.description.trim();
+          if (!hasContent) continue;
+          if (p.service_title.trim().length < 3) {
+            throw new Error(`Each ${cat} post needs a service title of at least 3 characters`);
           }
-          if (!p.service_title.trim()) {
-            throw new Error(`Each ${cat} post needs a service type (e.g. "Boho braids")`);
+          const priceNum = p.price ? Number(p.price) : 0;
+          if (!priceNum || priceNum <= 0) {
+            throw new Error(`Each ${cat} post needs a price greater than 0`);
           }
 
-          const image_urls: string[] = [];
-          for (const f of p.files.slice(0, 6)) {
+          setProgress(`Uploading images for ${cat}…`);
+          let featuredImageUrl: string | undefined;
+          const galleryImageUrls: string[] = [];
+          for (const [i, f] of p.files.slice(0, 8).entries()) {
             if (f.size > 5 * 1024 * 1024) throw new Error(`${f.name} is larger than 5MB`);
-            const data_base64 = await fileToBase64(f);
-            const res = await uploadImage({
-              data: {
-                filename: f.name,
-                content_type: f.type || "image/jpeg",
-                data_base64,
-                folder: "waitlist",
-              },
-            });
-            image_urls.push(res.url);
+            // Upload as portfolio image (also gives us a stable file URL)
+            const up = await uploadPortfolioImage(f);
+            if (i === 0) featuredImageUrl = up.fileUrl;
+            else galleryImageUrls.push(up.fileUrl);
           }
 
-          uploadedPosts.push({
-            category: cat,
-            service_title: p.service_title.trim(),
-            price: p.price ? Number(p.price) : null,
-            duration_minutes: p.duration_minutes ? Number(p.duration_minutes) : null,
-            description: p.description.trim() || null,
-            image_urls,
+          setProgress(`Creating service “${p.service_title.trim()}”…`);
+          const durationMin = p.duration_minutes ? Number(p.duration_minutes) : 0;
+          const durationHours = Math.floor(durationMin / 60);
+          const durationMinutes = durationMin % 60;
+
+          await createService({
+            title: p.service_title.trim(),
+            price: priceNum,
+            category: categoryEnum,
+            caption: p.description.trim() || p.service_title.trim(),
+            description: p.description.trim() || undefined,
+            durationHours: durationHours || undefined,
+            durationMinutes: durationMinutes || undefined,
+            brandName: businessName.trim(),
+            town: city.trim(),
+            location,
+            status: "PUBLISHED",
+            featuredImageUrl,
+            galleryImageUrls: galleryImageUrls.length ? galleryImageUrls : undefined,
           });
         }
       }
 
-      const result = await submit({
-        data: {
-          full_name: fullName.trim(),
-          phone: phone.trim(),
-          password,
-          city: city.trim(),
-          quarter: quarter.trim(),
-          business_name: businessName.trim(),
-          about: about.trim(),
-          services,
-          posts: uploadedPosts,
-          consent: true,
-        },
-      });
-
-
-      localStorage.setItem("katalok.signup_id", result.signup_id);
       setSuccess(true);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err?.message || "Something went wrong");
+      setError(err instanceof Error ? err : new Error("Something went wrong"));
     } finally {
       setLoading(false);
+      setProgress(null);
     }
   }
 
@@ -407,9 +382,12 @@ function ProWaitlist() {
           <CheckCircle2 className="mx-auto h-12 w-12 text-accent" />
           <h2 className="mt-4 text-3xl">You're in 🎉</h2>
           <p className="mt-3 text-muted-foreground">
-            Thanks {fullName.split(" ")[0]}. Your profile is pending review — we'll be in touch on{" "}
-            <span className="font-medium text-foreground">{phone}</span> before launch.
+            Welcome to Katalok {fullName.split(" ")[0]} — your services are live. You can keep editing your profile
+            and portfolio anytime.
           </p>
+          <a href="/onboarding" className="btn-primary mt-6 inline-flex">
+            Continue to your dashboard
+          </a>
         </div>
       </section>
     );
@@ -419,12 +397,12 @@ function ProWaitlist() {
     <section className="relative">
       <div className="container-page py-20 md:py-28">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="eyebrow">Early access</span>
+          <span className="eyebrow">Professional signup</span>
           <h2 className="mt-4 text-3xl sm:text-4xl md:text-5xl">
-            Be among the <span className="italic text-mocha">first professionals</span> on Katalok
+            Get started on <span className="italic text-mocha">Katalok</span>
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Tell us about you, your business, and the services you offer. Add a few portfolio posts to get featured at launch.
+            Tell us about you, your business, and the services you offer. Add a few posts to publish your first services.
           </p>
         </div>
 
@@ -436,10 +414,10 @@ function ProWaitlist() {
               <>
                 <h3 className="text-lg">Account</h3>
                 <Input label="Full name" value={fullName} onChange={setFullName} placeholder="Your full name" required />
-                <Input label="WhatsApp number" value={phone} onChange={setPhone} type="tel" placeholder="+237 ..." required />
+                <Input label="WhatsApp number" value={phone} onChange={setPhone} type="tel" placeholder="+237 6 ..." required />
                 <Input label="Password" value={password} onChange={setPassword} type="password" placeholder="At least 8 characters" required />
                 <p className="text-xs text-muted-foreground">
-                  You'll use your WhatsApp number and this password to sign in at launch.
+                  You'll sign in with your WhatsApp number and this password.
                 </p>
               </>
             )}
@@ -468,7 +446,6 @@ function ProWaitlist() {
                 </p>
               </>
             )}
-
 
             {step === 3 && (
               <>
@@ -527,7 +504,7 @@ function ProWaitlist() {
 
                               <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-input bg-background px-3 py-4 text-xs text-muted-foreground hover:bg-secondary">
                                 <Upload className="h-3.5 w-3.5" />
-                                {post.files.length > 0 ? `${post.files.length} image(s) selected` : "Upload pictures (up to 6)"}
+                                {post.files.length > 0 ? `${post.files.length} image(s) selected` : "Upload pictures (up to 8)"}
                                 <input
                                   type="file"
                                   accept="image/*"
@@ -535,7 +512,7 @@ function ProWaitlist() {
                                   className="hidden"
                                   onChange={(e) =>
                                     updatePost(cat, post.id, {
-                                      files: Array.from(e.target.files ?? []).slice(0, 6),
+                                      files: Array.from(e.target.files ?? []).slice(0, 8),
                                     })
                                   }
                                 />
@@ -543,7 +520,7 @@ function ProWaitlist() {
 
                               <div className="mt-2 grid gap-2">
                                 <Input
-                                  label={`Service type (e.g. ${exampleFor(cat)})`}
+                                  label={`Service title (e.g. ${exampleFor(cat)})`}
                                   value={post.service_title}
                                   onChange={(v) => updatePost(cat, post.id, { service_title: v })}
                                   placeholder={exampleFor(cat)}
@@ -567,7 +544,7 @@ function ProWaitlist() {
                                   />
                                 </div>
                                 <div>
-                                  <Label>Caption (optional)</Label>
+                                  <Label>Caption</Label>
                                   <textarea
                                     value={post.description}
                                     onChange={(e) => updatePost(cat, post.id, { description: e.target.value })}
@@ -595,12 +572,18 @@ function ProWaitlist() {
                   <span className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${consent ? "border-primary bg-primary text-primary-foreground" : "border-input"}`}>
                     {consent && <CheckCircle2 className="h-3 w-3" />}
                   </span>
-                  <span>I agree to be contacted by Katalok about early access and accept the privacy policy.</span>
+                  <span>I agree to the Katalok terms and privacy policy.</span>
                 </button>
               </>
             )}
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {progress && (
+              <p className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> {progress}
+              </p>
+            )}
+
+            <ErrorList error={error} />
 
             <div className="flex items-center justify-between gap-3 pt-1">
               {step > 1 ? (
@@ -620,7 +603,7 @@ function ProWaitlist() {
               ) : (
                 <button type="button" onClick={onSubmit} disabled={loading} className="btn-primary !px-5">
                   {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {loading ? "Submitting…" : "Submit application"}
+                  {loading ? "Submitting…" : "Create my Katalok account"}
                 </button>
               )}
             </div>

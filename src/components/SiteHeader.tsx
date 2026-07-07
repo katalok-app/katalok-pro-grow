@@ -15,6 +15,9 @@ export function SiteHeader() {
           <a href="#levels" className="hover:text-foreground">Levels</a>
         </nav>
         <div className="flex items-center gap-2">
+          <Link to="/login" className="hidden text-xs text-muted-foreground hover:text-foreground sm:inline-flex">
+            Sign in
+          </Link>
           <a href="#waitlist-client" className="btn-ghost hidden !px-4 !py-2.5 text-xs sm:inline-flex">
             Find a Pro
           </a>

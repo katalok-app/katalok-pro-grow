@@ -284,6 +284,7 @@ export async function uploadPortfolioImage(file: File): Promise<ProfessionalPort
   return apiRequest<ProfessionalPortfolioImage>("/api/upload/portfolio", {
     method: "POST",
     form,
+    retries: 2,
   });
 }
 
@@ -293,6 +294,7 @@ export async function uploadServiceFeatured(file: File): Promise<{ fileUrl: stri
   return apiRequest<{ fileUrl: string }>("/api/upload/service-featured", {
     method: "POST",
     form,
+    retries: 2,
   });
 }
 

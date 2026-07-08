@@ -126,10 +126,16 @@ function ClientSignup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | Error | null>(null);
   const [success, setSuccess] = useState(false);
+  const submittingRef = useRef(false);
 
   async function onSubmit() {
+    if (submittingRef.current || loading) return;
     setError(null);
+    if (fullName.trim().length < 2) return setError(new Error("Enter your full name"));
+    if (phone.trim().length < 7) return setError(new Error("Enter a valid WhatsApp number"));
+    if (password.length < 8) return setError(new Error("Password must be at least 8 characters"));
     if (!consent) return setError(new Error("Please accept to continue"));
+    submittingRef.current = true;
     setLoading(true);
     try {
       await register({
@@ -143,6 +149,7 @@ function ClientSignup() {
       setError(err instanceof Error ? err : new Error("Something went wrong"));
     } finally {
       setLoading(false);
+      submittingRef.current = false;
     }
   }
 

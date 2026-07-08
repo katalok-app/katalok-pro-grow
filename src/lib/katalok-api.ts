@@ -100,26 +100,34 @@ async function parseResponse<T>(res: Response): Promise<T> {
   return (json as ApiSuccess<T>).data;
 }
 
+// Single-flight refresh: coalesces simultaneous 401s into one refresh call.
+let refreshInflight: Promise<Tokens | null> | null = null;
 async function refreshAccessToken(): Promise<Tokens | null> {
+  if (refreshInflight) return refreshInflight;
   const current = getTokens();
   if (!current?.refreshToken) return null;
-  try {
-    const res = await fetch(`${KATALOK_API_URL}/api/auth/refresh-token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken: current.refreshToken }),
-    });
-    const data = await parseResponse<{ accessToken: string; refreshToken?: string }>(res);
-    const next: Tokens = {
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken ?? current.refreshToken,
-    };
-    setTokens(next);
-    return next;
-  } catch {
-    clearAuth();
-    return null;
-  }
+  refreshInflight = (async () => {
+    try {
+      const res = await fetch(`${KATALOK_API_URL}/api/auth/refresh-token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: current.refreshToken }),
+      });
+      const data = await parseResponse<{ accessToken: string; refreshToken?: string }>(res);
+      const next: Tokens = {
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken ?? current.refreshToken,
+      };
+      setTokens(next);
+      return next;
+    } catch {
+      clearAuth();
+      return null;
+    } finally {
+      setTimeout(() => { refreshInflight = null; }, 0);
+    }
+  })();
+  return refreshInflight;
 }
 
 type RequestOptions = {
@@ -127,10 +135,11 @@ type RequestOptions = {
   body?: unknown;
   form?: FormData;
   auth?: boolean; // attach bearer token (default true)
+  retries?: number; // retry on network-level failures only (default 0)
 };
 
 async function apiRequest<T>(path: string, opts: RequestOptions = {}): Promise<T> {
-  const { method = "GET", body, form, auth = true } = opts;
+  const { method = "GET", body, form, auth = true, retries = 0 } = opts;
   const send = async (token: string | null): Promise<Response> => {
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -144,13 +153,27 @@ async function apiRequest<T>(path: string, opts: RequestOptions = {}): Promise<T
     return fetch(`${KATALOK_API_URL}${path}`, { method, headers, body: payload });
   };
 
-  const tokens = getTokens();
-  let res = await send(auth ? tokens?.accessToken ?? null : null);
-  if (res.status === 401 && auth && tokens?.refreshToken) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) res = await send(refreshed.accessToken);
+  let attempt = 0;
+  while (true) {
+    try {
+      const tokens = getTokens();
+      let res = await send(auth ? tokens?.accessToken ?? null : null);
+      if (res.status === 401 && auth && tokens?.refreshToken) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) res = await send(refreshed.accessToken);
+      }
+      return await parseResponse<T>(res);
+    } catch (err) {
+      // Only retry true network failures (fetch throws TypeError). Never retry 4xx/5xx.
+      const isNetwork = err instanceof TypeError;
+      if (isNetwork && attempt < retries) {
+        attempt++;
+        await new Promise((r) => setTimeout(r, 300 * attempt));
+        continue;
+      }
+      throw err;
+    }
   }
-  return parseResponse<T>(res);
 }
 
 // ------ Auth ------

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Loader2, Plus, Trash2, Upload, ChevronLeft, ChevronRight, Sparkles, Scissors, ArrowLeft } from "lucide-react";
 import { CATEGORIES } from "@/lib/categories";
 import {
@@ -6,8 +6,8 @@ import {
   CATEGORY_LABEL_TO_ENUM,
   createService,
   register,
+  updateMyProfessionalProfile,
   uploadPortfolioImage,
-  uploadServiceFeatured,
 } from "@/lib/katalok-api";
 
 type Role = "pro" | "client";

@@ -193,6 +193,7 @@ function ProfileForm({
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (saving) return;
     setError(null);
     setSaving(true);
     try {
@@ -203,15 +204,18 @@ function ProfileForm({
       const bio = String(form.get("bio") ?? "").trim();
       const location = String(form.get("location") ?? "").trim();
 
-      const updatedUser = await updateMyProfile({
-        name: name || undefined,
-        phone: phone || undefined,
-        email: email || undefined,
-      });
-      const updatedProfile = await updateMyProfessionalProfile({
-        bio: bio || undefined,
-        location: location || undefined,
-      });
+      // Run the two PATCH requests in parallel — they target different endpoints.
+      const [updatedUser, updatedProfile] = await Promise.all([
+        updateMyProfile({
+          name: name || undefined,
+          phone: phone || undefined,
+          email: email || undefined,
+        }),
+        updateMyProfessionalProfile({
+          bio: bio || undefined,
+          location: location || undefined,
+        }),
+      ]);
       onSaved(updatedUser, updatedProfile);
       setSavedAt(Date.now());
     } catch (err) {

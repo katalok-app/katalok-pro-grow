@@ -349,6 +349,7 @@ function ServiceForm({
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (saving) return;
     setError(null);
     setSaving(true);
     try {
@@ -370,15 +371,25 @@ function ServiceForm({
       const durationHours = Math.floor(durMin / 60);
       const durationMinutes = durMin % 60;
 
-      let featuredImageUrl: string | undefined;
-      const galleryImageUrls: string[] = [];
-      for (const [i, f] of files.slice(0, 8).entries()) {
+      const capped = files.slice(0, 8);
+      for (const f of capped) {
         if (f.size > 5 * 1024 * 1024) throw new Error(`${f.name} is larger than 5MB`);
-        setProgress(`Uploading image ${i + 1}/${files.length}…`);
-        const up = await uploadPortfolioImage(f);
-        if (i === 0) featuredImageUrl = up.fileUrl;
-        else galleryImageUrls.push(up.fileUrl);
       }
+
+      // Upload all images in parallel with a live counter.
+      let done = 0;
+      const total = capped.length;
+      const uploaded = await Promise.all(
+        capped.map((f) =>
+          uploadPortfolioImage(f).then((up) => {
+            done++;
+            if (total > 0) setProgress(`Uploading images ${done}/${total}…`);
+            return up.fileUrl;
+          }),
+        ),
+      );
+      const featuredImageUrl = uploaded[0];
+      const galleryImageUrls = uploaded.slice(1);
 
       setProgress("Creating service…");
       const svc = await createService({

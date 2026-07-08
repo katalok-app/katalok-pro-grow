@@ -47,9 +47,11 @@ function OnboardingPage() {
       navigate({ to: "/login" });
       return;
     }
+    let cancelled = false;
     (async () => {
       try {
         const me = await getMe();
+        if (cancelled) return;
         setUser(me);
         if (me.role !== "PROFESSIONAL") {
           setLoadError("This dashboard is for professional accounts.");
@@ -57,10 +59,18 @@ function OnboardingPage() {
           return;
         }
         const pro = await getMyProfessionalProfile();
+        if (cancelled) return;
         setProfile(pro);
-        const svcs = await getServicesForProfessional(pro.id);
-        setServices(svcs);
+        // If the profile includes services already, skip the extra roundtrip.
+        if (pro.services && pro.services.length > 0) {
+          setServices(pro.services);
+        } else {
+          const svcs = await getServicesForProfessional(pro.id);
+          if (cancelled) return;
+          setServices(svcs);
+        }
       } catch (err) {
+        if (cancelled) return;
         if (err instanceof ApiError && err.status === 401) {
           clearAuth();
           navigate({ to: "/login" });
@@ -68,9 +78,10 @@ function OnboardingPage() {
         }
         setLoadError(err instanceof Error ? err.message : "Could not load your account");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+    return () => { cancelled = true; };
   }, [navigate]);
 
   function onLogout() {

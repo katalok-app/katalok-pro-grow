@@ -235,6 +235,7 @@ function ProSignup() {
   const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<ApiError | Error | null>(null);
   const [success, setSuccess] = useState(false);
+  const submittingRef = useRef(false);
 
   // Step 1
   const [fullName, setFullName] = useState("");
@@ -300,13 +301,61 @@ function ProSignup() {
   }
 
   async function onSubmit() {
+    if (submittingRef.current || loading) return;
     setError(null);
     if (services.length === 0) return setError(new Error("Select at least one service you offer"));
     if (!consent) return setError(new Error("Please accept to continue"));
 
+    // Pre-validate all posts before any network call.
+    type PreparedPost = {
+      cat: string;
+      categoryEnum: ReturnType<typeof CATEGORY_LABEL_TO_ENUM["Braids"] extends never ? never : (k: string) => string>;
+      title: string;
+      priceNum: number;
+      durationHours?: number;
+      durationMinutes?: number;
+      caption: string;
+      description?: string;
+      files: File[];
+    };
+    const prepared: PreparedPost[] = [];
+    for (const cat of services) {
+      const categoryEnum = CATEGORY_LABEL_TO_ENUM[cat];
+      if (!categoryEnum) continue;
+      for (const p of posts[cat] ?? []) {
+        const hasContent = p.service_title.trim() || p.files.length > 0 || p.price || p.duration_minutes || p.description.trim();
+        if (!hasContent) continue;
+        if (p.service_title.trim().length < 3) {
+          return setError(new Error(`Each ${cat} post needs a service title of at least 3 characters`));
+        }
+        const priceNum = p.price ? Number(p.price) : 0;
+        if (!priceNum || priceNum <= 0) {
+          return setError(new Error(`Each ${cat} post needs a price greater than 0`));
+        }
+        for (const f of p.files) {
+          if (f.size > 5 * 1024 * 1024) {
+            return setError(new Error(`${f.name} is larger than 5MB`));
+          }
+        }
+        const durationMin = p.duration_minutes ? Number(p.duration_minutes) : 0;
+        prepared.push({
+          cat,
+          categoryEnum: categoryEnum as never,
+          title: p.service_title.trim(),
+          priceNum,
+          durationHours: Math.floor(durationMin / 60) || undefined,
+          durationMinutes: (durationMin % 60) || undefined,
+          caption: p.description.trim() || p.service_title.trim(),
+          description: p.description.trim() || undefined,
+          files: p.files.slice(0, 8),
+        });
+      }
+    }
+
+    submittingRef.current = true;
     setLoading(true);
     try {
-      // 1) Register as PROFESSIONAL (returns JWT + stores it)
+      // 1) Register (must be first — mints JWT)
       setProgress("Creating your account…");
       await register({
         name: fullName.trim(),
@@ -316,52 +365,45 @@ function ProSignup() {
         plan: "STARTER",
       });
 
-      // 2) Update professional profile with bio + location
-      setProgress("Saving your profile…");
+      // 2) Profile update — can run in parallel with image uploads.
       const location = `${quarter.trim()}, ${city.trim()}`;
       const bio = `${businessName.trim()} — ${about.trim()}`;
-      const { updateMyProfessionalProfile } = await import("@/lib/katalok-api");
-      await updateMyProfessionalProfile({ bio, location });
+      setProgress("Saving profile & uploading images…");
+      const profilePromise = updateMyProfessionalProfile({ bio, location });
 
-      // 3) Create a Service for each portfolio post, uploading images
-      for (const cat of services) {
-        const categoryEnum = CATEGORY_LABEL_TO_ENUM[cat];
-        if (!categoryEnum) continue;
-        for (const p of posts[cat] ?? []) {
-          const hasContent = p.service_title.trim() || p.files.length > 0 || p.price || p.duration_minutes || p.description.trim();
-          if (!hasContent) continue;
-          if (p.service_title.trim().length < 3) {
-            throw new Error(`Each ${cat} post needs a service title of at least 3 characters`);
-          }
-          const priceNum = p.price ? Number(p.price) : 0;
-          if (!priceNum || priceNum <= 0) {
-            throw new Error(`Each ${cat} post needs a price greater than 0`);
-          }
+      // 3) Upload all images across all posts in parallel.
+      const totalImages = prepared.reduce((n, p) => n + p.files.length, 0);
+      let done = 0;
+      const uploads = prepared.map((p) =>
+        Promise.all(
+          p.files.map((f) =>
+            uploadPortfolioImage(f).then((up) => {
+              done++;
+              if (totalImages > 0) {
+                setProgress(`Uploading images ${done}/${totalImages}…`);
+              }
+              return up.fileUrl;
+            }),
+          ),
+        ),
+      );
+      const [uploadedPerPost] = await Promise.all([Promise.all(uploads), profilePromise]);
 
-          setProgress(`Uploading images for ${cat}…`);
-          let featuredImageUrl: string | undefined;
-          const galleryImageUrls: string[] = [];
-          for (const [i, f] of p.files.slice(0, 8).entries()) {
-            if (f.size > 5 * 1024 * 1024) throw new Error(`${f.name} is larger than 5MB`);
-            // Upload as portfolio image (also gives us a stable file URL)
-            const up = await uploadPortfolioImage(f);
-            if (i === 0) featuredImageUrl = up.fileUrl;
-            else galleryImageUrls.push(up.fileUrl);
-          }
-
-          setProgress(`Creating service “${p.service_title.trim()}”…`);
-          const durationMin = p.duration_minutes ? Number(p.duration_minutes) : 0;
-          const durationHours = Math.floor(durationMin / 60);
-          const durationMinutes = durationMin % 60;
-
-          await createService({
-            title: p.service_title.trim(),
-            price: priceNum,
-            category: categoryEnum,
-            caption: p.description.trim() || p.service_title.trim(),
-            description: p.description.trim() || undefined,
-            durationHours: durationHours || undefined,
-            durationMinutes: durationMinutes || undefined,
+      // 4) Create services in parallel.
+      setProgress(`Publishing ${prepared.length} service${prepared.length === 1 ? "" : "s"}…`);
+      await Promise.all(
+        prepared.map((p, i) => {
+          const urls = uploadedPerPost[i];
+          const featuredImageUrl = urls[0];
+          const galleryImageUrls = urls.slice(1);
+          return createService({
+            title: p.title,
+            price: p.priceNum,
+            category: p.categoryEnum as never,
+            caption: p.caption,
+            description: p.description,
+            durationHours: p.durationHours,
+            durationMinutes: p.durationMinutes,
             brandName: businessName.trim(),
             town: city.trim(),
             location,
@@ -369,9 +411,10 @@ function ProSignup() {
             featuredImageUrl,
             galleryImageUrls: galleryImageUrls.length ? galleryImageUrls : undefined,
           });
-        }
-      }
+        }),
+      );
 
+      setProgress("Finalizing…");
       setSuccess(true);
     } catch (err) {
       console.error(err);
@@ -379,6 +422,7 @@ function ProSignup() {
     } finally {
       setLoading(false);
       setProgress(null);
+      submittingRef.current = false;
     }
   }
 

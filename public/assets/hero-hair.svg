@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200" role="img" aria-labelledby="title">
+  <title id="title">Braids beauty portrait</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4d1bd"/>
+      <stop offset=".55" stop-color="#a86d4f"/>
+      <stop offset="1" stop-color="#35221c"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9f6042"/>
+      <stop offset="1" stop-color="#5a3328"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="1200" fill="url(#bg)"/>
+  <circle cx="450" cy="430" r="210" fill="#241814"/>
+  <g stroke="#120d0b" stroke-width="28" stroke-linecap="round" opacity=".95">
+    <path d="M278 356C214 545 194 731 222 1030"/>
+    <path d="M354 292C303 511 291 746 326 1100"/>
+    <path d="M438 270C409 520 410 790 438 1138"/>
+    <path d="M526 288C548 528 561 780 547 1110"/>
+    <path d="M608 340C668 562 692 782 666 1045"/>
+  </g>
+  <ellipse cx="450" cy="516" rx="162" ry="190" fill="url(#skin)"/>
+  <path d="M306 466c32-141 105-214 214-217 96 30 151 97 171 202-121-9-253-48-385 15z" fill="#1b1210"/>
+  <circle cx="393" cy="528" r="14" fill="#221511"/>
+  <circle cx="508" cy="528" r="14" fill="#221511"/>
+  <path d="M398 620c38 28 79 28 117 0" fill="none" stroke="#2b1712" stroke-width="12" stroke-linecap="round"/>
+  <path d="M250 910c88-94 312-94 400 0l62 290H188l62-290z" fill="#fff0e3"/>
+</svg>

@@ -1,8 +1,9 @@
 import { ArrowRight, Sparkles } from "lucide-react";
-import hair from "@/assets/hero-hair.jpg.asset.json";
-import locs from "@/assets/hero-locs.jpg.asset.json";
-import lashes from "@/assets/hero-lashes.jpg.asset.json";
-import barber from "@/assets/hero-barber.jpg.asset.json";
+
+const hair = "/assets/hero-hair.svg";
+const locs = "/assets/hero-locs.svg";
+const lashes = "/assets/hero-lashes.svg";
+const barber = "/assets/hero-barber.svg";
 
 export function Hero() {
   return (
@@ -46,7 +47,7 @@ export function Hero() {
               {[hair, lashes, barber].map((src, i) => (
                 <img
                   key={i}
-                  src={src.url}
+                  src={src}
                   alt=""
                   className="h-8 w-8 rounded-full border-2 border-background object-cover"
                   loading="lazy"
@@ -61,12 +62,12 @@ export function Hero() {
         <div className="md:col-span-5">
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-3 sm:space-y-4">
-              <ImgTile src={hair.url} label="Braids" tall />
-              <ImgTile src={lashes.url} label="Lashes" />
+              <ImgTile src={hair} label="Braids" tall />
+              <ImgTile src={lashes} label="Lashes" />
             </div>
             <div className="space-y-3 pt-8 sm:space-y-4 sm:pt-10">
-              <ImgTile src={locs.url} label="Locs" />
-              <ImgTile src={barber.url} label="Barber" tall />
+              <ImgTile src={locs} label="Locs" />
+              <ImgTile src={barber} label="Barber" tall />
             </div>
           </div>
         </div>

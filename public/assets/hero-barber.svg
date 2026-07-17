@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200" role="img" aria-labelledby="title">
+  <title id="title">Barber haircut portrait</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c9e3d5"/>
+      <stop offset=".48" stop-color="#6f8f82"/>
+      <stop offset="1" stop-color="#1d2624"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="1200" fill="url(#bg)"/>
+  <path d="M255 415c8-145 93-243 218-251 119 15 195 101 202 251-127-54-285-54-420 0z" fill="#171311"/>
+  <ellipse cx="450" cy="520" rx="170" ry="205" fill="#8f5a3c"/>
+  <path d="M273 432c43-101 114-148 213-140 78 13 134 59 168 138-121-23-250-22-381 2z" fill="#171311"/>
+  <rect x="275" y="465" width="65" height="135" rx="32" fill="#8f5a3c"/>
+  <rect x="560" y="465" width="65" height="135" rx="32" fill="#8f5a3c"/>
+  <circle cx="397" cy="518" r="13" fill="#19100d"/>
+  <circle cx="505" cy="518" r="13" fill="#19100d"/>
+  <path d="M385 625c40 26 89 26 130 0" fill="none" stroke="#24130f" stroke-width="12" stroke-linecap="round"/>
+  <path d="M286 852c74-102 254-126 328 0l80 348H206l80-348z" fill="#26201d"/>
+  <path d="M284 850c52 60 110 92 166 92s114-32 166-92" fill="none" stroke="#f6efe8" stroke-width="22" stroke-linecap="round"/>
+  <path d="M680 275l85-85m-70 118 116-27m-82 82 88 43" stroke="#f5efe6" stroke-width="19" stroke-linecap="round" opacity=".8"/>
+</svg>

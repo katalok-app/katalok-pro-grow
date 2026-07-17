@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" role="img" aria-labelledby="title">
+  <title id="title">Locs hairstyle portrait</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d8c1a8"/>
+      <stop offset=".5" stop-color="#7b5a47"/>
+      <stop offset="1" stop-color="#18251f"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="900" fill="url(#bg)"/>
+  <circle cx="450" cy="330" r="210" fill="#211611"/>
+  <g stroke="#18100d" stroke-width="38" stroke-linecap="round">
+    <path d="M268 284c-48 125-60 285-30 477"/>
+    <path d="M340 220c-54 179-56 372-19 610"/>
+    <path d="M423 196c-43 197-40 406-6 658"/>
+    <path d="M508 203c47 210 48 415 12 653"/>
+    <path d="M590 245c63 169 73 345 38 574"/>
+    <path d="M653 322c50 125 57 268 28 424"/>
+  </g>
+  <ellipse cx="452" cy="405" rx="150" ry="178" fill="#87563d"/>
+  <path d="M315 344c58-102 140-143 246-119 42 32 67 78 77 138-99-8-203-37-323-19z" fill="#20130f"/>
+  <circle cx="398" cy="420" r="12" fill="#1a100d"/>
+  <circle cx="504" cy="420" r="12" fill="#1a100d"/>
+  <path d="M402 503c32 25 67 25 99 0" fill="none" stroke="#2a1711" stroke-width="10" stroke-linecap="round"/>
+  <path d="M232 752c82-100 354-100 436 0l74 148H158l74-148z" fill="#f1d2b5"/>
+</svg>

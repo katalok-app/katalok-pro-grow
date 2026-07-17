@@ -1,13 +1,13 @@
-import logo from "@/assets/katalok-logo-transparent.png.asset.json";
+const logo = "/assets/katalok-logo.svg";
 
 export function Logo({ className = "h-12 w-auto" }: { className?: string }) {
   return (
     <img
-      src={logo.url}
+      src={logo}
       alt="Katalok"
       className={className}
-      width={1033}
-      height={942}
+      width={360}
+      height={120}
     />
   );
 }

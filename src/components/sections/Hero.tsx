@@ -1,9 +1,9 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 
-const hair = "/assets/hero-hair.svg";
-const locs = "/assets/hero-locs.svg";
-const lashes = "/assets/hero-lashes.svg";
-const barber = "/assets/hero-barber.svg";
+const hair = { src: "/assets/hair-braids.jpg", fallback: "/assets/hero-hair.svg" };
+const locs = { src: "/assets/locs.jpg", fallback: "/assets/hero-locs.svg" };
+const lashes = { src: "/assets/lashes1.jpg", fallback: "/assets/hero-lashes.svg" };
+const barber = { src: "/assets/barber.jpg", fallback: "/assets/hero-barber.svg" };
 
 export function Hero() {
   return (
@@ -44,13 +44,16 @@ export function Hero() {
           </p>
           <div className="mt-10 flex items-center gap-4 text-xs text-muted-foreground">
             <div className="flex -space-x-2">
-              {[hair, lashes, barber].map((src, i) => (
+              {[hair, lashes, barber].map((image, i) => (
                 <img
                   key={i}
-                  src={src}
+                  src={image.src}
                   alt=""
                   className="h-8 w-8 rounded-full border-2 border-background object-cover"
                   loading="lazy"
+                  onError={(event) => {
+                    event.currentTarget.src = image.fallback;
+                  }}
                 />
               ))}
             </div>
@@ -62,12 +65,12 @@ export function Hero() {
         <div className="md:col-span-5">
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-3 sm:space-y-4">
-              <ImgTile src={hair} label="Braids" tall />
-              <ImgTile src={lashes} label="Lashes" />
+              <ImgTile image={hair} label="Braids" tall />
+              <ImgTile image={lashes} label="Lashes" />
             </div>
             <div className="space-y-3 pt-8 sm:space-y-4 sm:pt-10">
-              <ImgTile src={locs} label="Locs" />
-              <ImgTile src={barber} label="Barber" tall />
+              <ImgTile image={locs} label="Locs" />
+              <ImgTile image={barber} label="Barber" tall />
             </div>
           </div>
         </div>
@@ -76,7 +79,15 @@ export function Hero() {
   );
 }
 
-function ImgTile({ src, label, tall = false }: { src: string; label: string; tall?: boolean }) {
+function ImgTile({
+  image,
+  label,
+  tall = false,
+}: {
+  image: { src: string; fallback: string };
+  label: string;
+  tall?: boolean;
+}) {
   return (
     <div
       className={`group relative overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-soft)] ${
@@ -84,10 +95,13 @@ function ImgTile({ src, label, tall = false }: { src: string; label: string; tal
       }`}
     >
       <img
-        src={src}
+        src={image.src}
         alt={label}
         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         loading="eager"
+        onError={(event) => {
+          event.currentTarget.src = image.fallback;
+        }}
       />
       <span className="absolute bottom-2 left-2 rounded-full bg-background/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-cocoa">
         {label}

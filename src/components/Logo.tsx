@@ -1,4 +1,5 @@
-const logo = "/assets/katalok-logo.svg";
+const logo = "/assets/katalok-logo.png";
+const fallbackLogo = "/assets/katalok-logo.svg";
 
 export function Logo({ className = "h-12 w-auto" }: { className?: string }) {
   return (
@@ -6,8 +7,11 @@ export function Logo({ className = "h-12 w-auto" }: { className?: string }) {
       src={logo}
       alt="Katalok"
       className={className}
-      width={360}
-      height={120}
+      width={1033}
+      height={942}
+      onError={(event) => {
+        event.currentTarget.src = fallbackLogo;
+      }}
     />
   );
 }

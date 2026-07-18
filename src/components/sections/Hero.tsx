@@ -1,9 +1,9 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 
-const hair = "/assets/hero-hair.svg";
-const locs = "/assets/hero-locs.svg";
-const lashes = "/assets/hero-lashes.svg";
-const barber = "/assets/hero-barber.svg";
+const hair = "/assets/4841c025900428a4047841d01978a99f.jpg";
+const locs = "/assets/4467eebe61a94fb9c6c1530922de4d37.jpg";
+const lashes = "/assets/17ec5cd9e82f85446cc3e49338667f8b.jpg";
+const barber = "/assets/1ea607682418a7359a3c170caae8280b.jpg";
 
 export function Hero() {
   return (

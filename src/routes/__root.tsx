@@ -86,8 +86,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Katalok — for beauty professionals" },
       { name: "twitter:description", content: "Get discovered. Get booked. Grow your beauty business with Katalok." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/50a58f3f-b64b-4446-8755-9001151dae12/id-preview-fd3cd767--d2f16827-542e-4d35-81fb-aa4e6ea4148f.lovable.app-1780759738755.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/50a58f3f-b64b-4446-8755-9001151dae12/id-preview-fd3cd767--d2f16827-542e-4d35-81fb-aa4e6ea4148f.lovable.app-1780759738755.png" },
+      { property: "og:image", content: "/assets/4841c025900428a4047841d01978a99f.jpg" },
+      { name: "twitter:image", content: "/assets/4841c025900428a4047841d01978a99f.jpg" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

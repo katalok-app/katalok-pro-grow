@@ -280,7 +280,7 @@ function ServicesSection({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl">Services</h2>
-          <p className="text-sm text-muted-foreground">Each service is a post clients can book.</p>
+          <p className="text-sm text-muted-foreground">Each service is a post clients can discover.</p>
         </div>
         <button onClick={() => setAdding(true)} className="btn-primary !px-4 !py-2.5 text-xs">
           <Plus className="h-4 w-4" /> Add service

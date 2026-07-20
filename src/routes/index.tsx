@@ -14,17 +14,17 @@ import { Vision } from "@/components/sections/Vision";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Katalok — Get Discovered. Get Booked. Grow Your Beauty Business." },
+      { title: "Katalok — Your Beauty Portfolio. Beautifully Organized." },
       {
         name: "description",
         content:
-          "Katalok helps African beauty pros get discovered and booked — and helps clients find trusted hairstylists, nail techs, makeup artists & barbers nearby. Join the waitlist.",
+          "Stop letting your best work sit unseen in your phone gallery. Create a beautiful online Katalok where clients can explore your work, get inspired, and contact you directly.",
       },
-      { property: "og:title", content: "Katalok — for pros and clients" },
+      { property: "og:title", content: "Katalok — Your Beauty Portfolio. Beautifully Organized." },
       {
         property: "og:description",
         content:
-          "The discovery & booking platform for African beauty pros and the clients who book them. Starting in Cameroon.",
+          "Don't just save your work. Showcase it. Build your digital beauty catalog and get discovered by nearby clients.",
       },
       { property: "og:type", content: "website" },
     ],

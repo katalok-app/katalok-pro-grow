@@ -1,11 +1,11 @@
-import { EyeOff, CalendarX, Clock, Hash, MessageSquareOff } from "lucide-react";
+import { Smartphone, Instagram, MessageCircle, Search, Sparkles } from "lucide-react";
 
 const items = [
-  { icon: EyeOff, title: "Limited visibility", body: "Talent buried under followers and algorithms." },
-  { icon: CalendarX, title: "Messy booking", body: "DMs, voice notes, and back-and-forth confirmations." },
-  { icon: Clock, title: "No-shows & time wasters", body: "Empty slots that should have been paid appointments." },
-  { icon: Hash, title: "Stuck on social media", body: "Reach depends on virality, not skill." },
-  { icon: MessageSquareOff, title: "Unstructured chats", body: "Clients ghost, change minds, forget details." },
+  { icon: Smartphone, title: "Hidden in your camera roll", body: "Hundreds of beautiful photos nobody outside your phone will ever see." },
+  { icon: Instagram, title: "Posts that disappear", body: "Great work vanishes down the feed within hours of posting." },
+  { icon: MessageCircle, title: "Lost in WhatsApp threads", body: "Your best photos buried in endless chat conversations." },
+  { icon: Search, title: "Clients can't find inspiration", body: "No single place to browse your work, services, and prices." },
+  { icon: Sparkles, title: "No home for your brand", body: "Nowhere to send a new client that shows who you really are." },
 ];
 
 export function Problem() {
@@ -14,9 +14,12 @@ export function Problem() {
       <div className="max-w-2xl">
         <span className="eyebrow">The reality today</span>
         <h2 className="mt-4 text-3xl sm:text-4xl md:text-5xl">
-          Why beauty professionals need
-          <span className="italic text-mocha"> more than Instagram</span>
+          Your best work deserves better than a
+          <span className="italic text-mocha"> camera roll</span>
         </h2>
+        <p className="mt-4 text-muted-foreground">
+          Your phone gallery stores your work. Katalok helps the world discover it.
+        </p>
       </div>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

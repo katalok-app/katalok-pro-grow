@@ -19,27 +19,25 @@ export function Hero() {
             <Sparkles className="h-3 w-3" /> For beauty professionals
           </span>
           <h1 className="mt-5 font-display text-4xl leading-[1.05] text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
-            Get Discovered.
+            Your Beauty Portfolio.
             <br />
-            Get Booked.
-            <br />
-            <span className="italic text-mocha">Grow your business.</span>
+            <span className="italic text-mocha">Beautifully Organized.</span>
           </h1>
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">
-            Join Katalok — the new platform helping hairstylists, nail techs, makeup
-            artists & barbers showcase their work, attract serious clients, and receive
-            structured bookings.
+            Stop letting your best work sit unseen in your phone gallery. Create a
+            beautiful online Katalok where clients can explore your work, get inspired,
+            and contact you directly.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <a href="#waitlist-pro" className="btn-primary">
-              Join the Waitlist <ArrowRight className="h-4 w-4" />
+              Create Your Free Portfolio <ArrowRight className="h-4 w-4" />
             </a>
-            <a href="#offer" className="btn-ghost">See how it works</a>
+            <a href="#offer" className="btn-ghost">See Example Profiles</a>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            Looking for a stylist instead?{" "}
+            Looking for a beauty pro instead?{" "}
             <a href="#waitlist-client" className="font-medium text-foreground underline underline-offset-4 hover:text-primary">
-              Join as a client →
+              Discover pros near you →
             </a>
           </p>
           <div className="mt-10 flex items-center gap-4 text-xs text-muted-foreground">

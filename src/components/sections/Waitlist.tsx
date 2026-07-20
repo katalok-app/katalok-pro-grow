@@ -51,10 +51,10 @@ export function Waitlist() {
             </span>
             <h3 className="text-lg">I'm a beauty professional</h3>
             <p className="text-sm text-muted-foreground">
-              List your services and get booked by serious clients.
+              Build your online Katalok and get discovered by nearby clients.
             </p>
             <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
-              Start pro signup <ChevronRight className="h-3.5 w-3.5" />
+              Create your portfolio <ChevronRight className="h-3.5 w-3.5" />
             </span>
           </button>
 
@@ -69,7 +69,7 @@ export function Waitlist() {
             </span>
             <h3 className="text-lg">I'm a client</h3>
             <p className="text-sm text-muted-foreground">
-              Find and book trusted beauty pros near you.
+              Discover beauty pros near you and get inspired.
             </p>
             <span className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
               Create client account <ChevronRight className="h-3.5 w-3.5" />

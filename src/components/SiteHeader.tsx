@@ -12,17 +12,17 @@ export function SiteHeader() {
           <a href="#offer" className="hover:text-foreground">Why Katalok</a>
           <a href="#categories" className="hover:text-foreground">Categories</a>
           <a href="#how" className="hover:text-foreground">How it works</a>
-          <a href="#levels" className="hover:text-foreground">Levels</a>
+          <a href="#levels" className="hover:text-foreground">Plans</a>
         </nav>
         <div className="flex items-center gap-2">
           <Link to="/login" className="hidden text-xs text-muted-foreground hover:text-foreground sm:inline-flex">
             Sign in
           </Link>
           <a href="#waitlist-client" className="btn-ghost hidden !px-4 !py-2.5 text-xs sm:inline-flex">
-            Find a Pro
+            Discover Pros
           </a>
           <a href="#waitlist-pro" className="btn-primary !px-5 !py-2.5 text-xs">
-            Join as Pro
+            Create Portfolio
           </a>
         </div>
       </div>

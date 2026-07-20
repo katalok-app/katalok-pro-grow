@@ -150,6 +150,14 @@
     box-shadow: var(--shadow-soft);
     @apply rounded-2xl border border-border;
   }
+  .logo-wordmark {
+    @apply relative block shrink-0 overflow-hidden;
+  }
+  .logo-wordmark__image {
+    @apply absolute h-[948%] w-auto max-w-none;
+    left: -43%;
+    top: -589%;
+  }
 }
 
 @keyframes fade-up {

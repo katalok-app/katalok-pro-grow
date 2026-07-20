@@ -6,7 +6,7 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-card/40">
       <div className="container-page grid gap-10 py-14 md:grid-cols-4">
         <div className="md:col-span-2">
-          <Logo className="h-14 w-auto" />
+          <Logo className="h-10 w-[12.75rem]" />
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">
             A beauty discovery & booking platform built for African markets.
           </p>

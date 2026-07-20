@@ -1,13 +1,17 @@
-const logo = "/assets/katalok-logo.svg";
+import { cn } from "@/lib/utils";
 
-export function Logo({ className = "h-12 w-auto" }: { className?: string }) {
+const logo = "/assets/logo.jpg";
+
+export function Logo({ className }: { className?: string }) {
   return (
-    <img
-      src={logo}
-      alt="Katalok"
-      className={className}
-      width={360}
-      height={120}
-    />
+    <span className={cn("logo-wordmark h-9 w-[11.5rem]", className)}>
+      <img
+        src={logo}
+        alt="Katalok"
+        className="logo-wordmark__image"
+        width={1280}
+        height={1280}
+      />
+    </span>
   );
 }

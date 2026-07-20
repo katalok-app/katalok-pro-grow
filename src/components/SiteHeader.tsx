@@ -6,7 +6,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="container-page flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center">
-          <Logo className="h-10 w-auto md:h-12" />
+          <Logo className="h-8 w-[10.25rem] md:h-9 md:w-[11.5rem]" />
         </Link>
         <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
           <a href="#offer" className="hover:text-foreground">Why Katalok</a>
